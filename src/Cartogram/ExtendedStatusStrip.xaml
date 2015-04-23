@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="Cartogram.ExtendedStatusStrip"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="150" Width="450">
+    <Grid>
+        <ListBox x:Name="ListBoxStatus" Height="125" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Background="#FFF1EDED" Visibility="Hidden" BorderThickness="0,1,1,1"></ListBox>
+        <StatusBar x:Name="StatusBar" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Bottom" BorderThickness="0,1,0,0" BorderBrush="#FFABADB3">
+            <DockPanel x:Name="DockPanelControls" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Height="25" Margin="0,-3,0,0">
+                <Label x:Name="StatusTitle" Content="Status:" HorizontalAlignment="Left" Height="25" Width="45" />
+                <Label x:Name="StatusValue" Content="" HorizontalAlignment="Left" Height="25" HorizontalContentAlignment="Left" />
+                <Button x:Name="ButtonExpand" Content="↑" Width="15" Height="23" HorizontalAlignment="Right" BorderThickness="0" Background="#00DDDDDD" Margin="0,0,10,0" Click="ButtonExpand_Click"/>
+            </DockPanel>
+        </StatusBar>
+
+    </Grid>
+</UserControl>
