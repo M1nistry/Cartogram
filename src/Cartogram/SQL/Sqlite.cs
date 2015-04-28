@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 
 namespace Cartogram.SQL
 {
@@ -176,7 +177,7 @@ namespace Cartogram.SQL
             dtMaps.Columns.Add("mysql_id", typeof(int));
             dtMaps.Columns.Add("level");
             dtMaps.Columns.Add("name");
-            dtMaps.Columns.Add("gained", typeof(double));
+            dtMaps.Columns.Add("gained", typeof(float));
             dtMaps.Columns.Add("rarity");
             dtMaps.Columns.Add("quality");
             dtMaps.Columns.Add("quantity");
@@ -198,7 +199,7 @@ namespace Cartogram.SQL
                                 var mapId = int.Parse(reader["id"].ToString());
                                 var sqlId = int.Parse(reader["mysql_id"].ToString());
                                 dtMaps.Rows.Add(mapId, sqlId, int.Parse(reader["level"].ToString()),
-                                    reader["name"].ToString(), String.Format("{0:N3}", ExpGained(mapId)),
+                                    reader["name"].ToString(), String.Format("{0:N2}", ExpGained(mapId)),
                                     reader["rarity"].ToString(), int.Parse(reader["quality"].ToString()),
                                     int.Parse(reader["quantity"].ToString()), MapDrops(mapId, "<"),
                                     MapDrops(mapId, "="), MapDrops(mapId, ">"));
@@ -208,8 +209,9 @@ namespace Cartogram.SQL
                     return dtMaps;
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                Console.WriteLine(exception.Message);
                 return null;
             }
         }
@@ -219,6 +221,7 @@ namespace Cartogram.SQL
             var dtDrops = new DataTable("drops");
             dtDrops.Columns.Add("title");
             dtDrops.Columns.Add("drops");
+            dtDrops.Columns.Add("maps");
             var drops = "";
 
             try
@@ -239,7 +242,10 @@ namespace Cartogram.SQL
                                 drops += reader["level"] + ", ";
                             }
                             if (drops.Length > 2) drops = drops.Remove(drops.Length - 2, 2);
-                            dtDrops.Rows.Add("Maps", drops);
+                            var mapList = MapList(mapId);
+                            var tooltipText = mapList.Aggregate("", (current, item) => current + (item.Key + " - " + item.Value + Environment.NewLine));
+                            if (tooltipText.EndsWith(Environment.NewLine)) tooltipText = tooltipText.Remove(tooltipText.Length - Environment.NewLine.Length, Environment.NewLine.Length);
+                            dtDrops.Rows.Add("Maps", drops, tooltipText);
                         }
 
                         cmd.CommandText = uniqueQuery;
@@ -328,7 +334,7 @@ namespace Cartogram.SQL
                             if (!long.TryParse(reader["exp_before"].ToString(), out expBefore) || !long.TryParse(reader["exp_after"].ToString(), out expAfter) || !int.TryParse(reader["level_before"].ToString(), out level)) continue;
                             var value = (expAfter - expBefore);
                             var goal = ExperienceGoal(level);
-                            var percentDiff = (float)value / goal;
+                            var percentDiff = ((float)value / goal) * 100;
                             return percentDiff;
                         }
                     }

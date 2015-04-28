@@ -6,25 +6,51 @@ namespace Cartogram.JSON
 {
     class JsonHandler
     {
+        //All Ladders currently running
         public static T ParseJson<T>(String json)
         {
-            var webPage = DownloadUrl(json);
-
-            if (webPage == null) return default(T);
-            try
+            string webPage = DownloadUrl(json);
+            if (webPage != null)
             {
-                var result = JsonConvert.DeserializeObject<T>(webPage);
-                return result;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
+                try
+                {
+                    var poeLadderAll = JsonConvert.DeserializeObject<T>(webPage);
 
-                return default(T);
+
+                    return poeLadderAll;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+
+                    return default(T);
+                }
             }
+            return default(T);
         }
 
-        private static string DownloadUrl(string url)
+        public static dynamic ParseJsonObject(string json)
+        {
+            string webPage = DownloadUrl(json);
+            if (webPage != null)
+            {
+                try
+                {
+                    if (webPage.Contains("No data returned")) return null;
+                    var jObject = JsonConvert.DeserializeObject(webPage);
+                    return jObject;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        //Download provided URL and return as String
+        public static String DownloadUrl(String url)
         {
             var webReqeust = new WebClient();
 
@@ -32,6 +58,7 @@ namespace Cartogram.JSON
             {
                 return webReqeust.DownloadString(url);
             }
+
             catch (Exception e)
             {
                 Console.WriteLine(e);

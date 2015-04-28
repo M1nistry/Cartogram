@@ -1,0 +1,35 @@
+﻿<Window x:Name="WindowSettings" x:Class="Cartogram.ApplicationSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" d:DesignWidth="250" Height="182" Width="250" WindowStyle="ToolWindow">
+    <Grid>
+        <Border BorderBrush="Black" BorderThickness="1"/>
+        <Canvas x:Name="CanvasSettings" Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
+            <Label x:Name="ZanaLevel" Content="Zana Level: " Canvas.Top="10" Canvas.Left="10"/>
+            <Slider x:Name="ZanaValue" Canvas.Top="14" Canvas.Left="80" Width="100" Maximum="8" ValueChanged="ZanaValue_ValueChanged" SmallChange="1000"/>
+            <Label x:Name="ZanaInt" Content="0"  Canvas.Top="10" Canvas.Left="190"></Label>
+            <Grid Height="70" Canvas.Left="10" Canvas.Top="45" Width="220">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="20"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0" Content="Finish Map" Height="25"/>
+                <Button Grid.Column="1" Grid.Row="0" Content="F2" Margin="1,1,1,1"/>
+                <Label Grid.Row="1" Grid.Column="0" Content="Toggle Zana" Height="28"/>
+                <Button Grid.Column="1" Grid.Row="1" Content="F3" Margin="1,1,1,1"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Toggle Cartographer" Height="28"/>
+                <Button Grid.Column="1" Grid.Row="2" Content="F2" Margin="1,1,1,1"/>
+            </Grid>
+            <Button x:Name="ButtonSave" Content="Save" Canvas.Left="75" Canvas.Top="120" Width="75"/>
+            <Button x:Name="ButtonCancel" Content="Cancel" Canvas.Left="155" Canvas.Top="120" Width="75"/>
+        </Canvas>
+    </Grid>
+</Window>

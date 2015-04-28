@@ -1,6 +1,7 @@
 ﻿<Application x:Class="Cartogram.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <Style x:Key="ScrollThumbs" TargetType="{x:Type Thumb}">
@@ -20,6 +21,22 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <!-- Style to hide tool tips that have an empty content. -->
+        <Style TargetType="TextBlock">
+            <Style.Triggers>
+                <Trigger Property="Text"
+                 Value="{x:Static sys:String.Empty}">
+                    <Setter Property="Visibility"
+                    Value="Collapsed" />
+                </Trigger>
+                <Trigger Property="Text"
+                 Value="{x:Null}">
+                    <Setter Property="Visibility"
+                    Value="Collapsed" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <!--ScrollBars-->
