@@ -9,7 +9,7 @@ namespace Cartogram.SQL
 {
     class Sqlite
     {
-        private readonly string _dbPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\GumshoeMaps\MapsDB.s3db";
+        private readonly string _dbPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram\MapsDB.s3db";
         private SQLiteConnection Connection { get; set; }
 
         public Sqlite()
@@ -24,9 +24,9 @@ namespace Cartogram.SQL
 
         private bool SetupDb()
         {
-            if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\GumshoeMaps"))
+            if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram"))
             {
-                Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\GumshoeMaps");
+                Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram");
                 if (!File.Exists(_dbPath)) SQLiteConnection.CreateFile(_dbPath);
             }
             try
@@ -35,9 +35,8 @@ namespace Cartogram.SQL
                 {
                     using (var cmd = new SQLiteCommand(connection))
                     {
-                        cmd.CommandText =
-                            @"CREATE TABLE IF NOT EXISTS `maps` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `mysql_id` INTEGER DEFAULT 0, `rarity` TEXT, `level` INTEGER, `name` TEXT, 
-                                            `quality` INTEGER, `quantity` INTEGER, `started_at` DATETIME, `finished_at` DATETIME, `notes` TEXT, `league` TEXT);";
+                        cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `maps` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `mysql_id` INTEGER DEFAULT 0, `rarity` TEXT, `level` INTEGER, `name` TEXT, 
+                                            `quality` INTEGER, `quantity` INTEGER, `started_at` DATETIME, `finished_at` DATETIME, `notes` TEXT, `league` TEXT, `character` TEXT);";
                         cmd.ExecuteNonQuery();
 
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `affixes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `map_id` INTEGER, `affix` TEXT);";
@@ -77,8 +76,8 @@ namespace Cartogram.SQL
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
-                const string addQuery = @"INSERT INTO `maps` (`mysql_id`, `rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`) VALUES 
-                                                             (@mysqlid, @rarity, @level, @name, @quality, @quantity, @startedat, @league)";
+                const string addQuery = @"INSERT INTO `maps` (`mysql_id`, `rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`) VALUES 
+                                                             (@mysqlid, @rarity, @level, @name, @quality, @quantity, @startedat, @league, @character)";
                 using (var cmd = new SQLiteCommand(addQuery, connection))
                 {
                     cmd.Parameters.AddWithValue("mysqlid", newMap.SqlId);
@@ -89,6 +88,7 @@ namespace Cartogram.SQL
                     cmd.Parameters.AddWithValue("quantity", newMap.Quantity + Properties.Settings.Default.ZanaQuantity);
                     cmd.Parameters.AddWithValue("startedat", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     cmd.Parameters.AddWithValue("league", newMap.League);
+                    cmd.Parameters.AddWithValue("character", newMap.Character);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -161,7 +161,9 @@ namespace Cartogram.SQL
                                 Notes = reader["notes"].ToString(),
                                 ExpAfter = expAfter,
                                 ExpBefore = expBefore,
-                                Affixes = affixes
+                                Affixes = affixes,
+                                League = reader["league"].ToString(),
+                                Character = reader["character"].ToString()
                             };
                         }
                     }

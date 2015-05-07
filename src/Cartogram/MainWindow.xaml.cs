@@ -7,16 +7,14 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using Cartogram.SQL;
-using Timer = System.Timers.Timer;
 
 using System.Drawing;
 using System.Windows.Forms;
-using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Cartogram.JSON;
 using Cartogram.Properties;
 using Tesseract;
@@ -42,15 +40,21 @@ namespace Cartogram
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern int SendMessage(IntPtr hwnd, int wMsg, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("user32.dll")]
-        internal static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vlc);
+        [DllImport("User32.dll")]
+        private static extern bool RegisterHotKey([In] IntPtr hWnd, [In] int id, [In] uint fsModifiers, [In] uint vk);
+
+        [DllImport("User32.dll")]
+        private static extern bool UnregisterHotKey([In] IntPtr hWnd, [In] int id);
+
+        private HwndSource _source;
 
         #endregion
 
         IntPtr _nextClipboardViewer;
         private Sqlite _sql;
+        private static MainWindow _main;
 
-        private Timer _mapTimer;
+        private readonly DispatcherTimer _mapTimer;
         internal Map CurrentMap;
         private int _timerTicks;
         private string _state;
@@ -60,31 +64,73 @@ namespace Cartogram
             InitializeComponent();
 
             _sql = new Sqlite();
+            _main = this;
+            if (_sql.ExperienceCount() != 100) PopulateExperience();
+
             RefreshGrids();
             RefreshDrops(0);
             PopulateLeagues();
             ScrollViewer.SetCanContentScroll(GridDrops, false);
-            _mapTimer = new Timer
+            _mapTimer = new DispatcherTimer
             {
-                Interval = 1000,
-                Enabled = false,
+                Interval = TimeSpan.FromSeconds(1),
+                IsEnabled = false,
             };
-            TextBoxName.Text = Properties.Settings.Default.CharacterName;
-            _mapTimer.Elapsed += _mapTimer_Elapsed;
+            ComboLeague.Text = Settings.Default.SelectedLeague;
+            TextBoxName.Text = Settings.Default.CharacterName;
+            _mapTimer.Tick += _mapTimer_Elapsed;
 
-            
+            RegisterHotkeys();
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
             _state = "WAITING";
-            ExtendedStatusStrip.AddStatus("Welcome back, Exile!"); 
+            ExtendedStatusStrip.AddStatus("Welcome back, Exile!");
+        }
+
+        public static MainWindow GetSingleton()
+        {
+            return _main;
         }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            HwndSource source = PresentationSource.FromVisual(this) as HwndSource;
-            RegisterHotKey(source.Handle, 0, 0x0000, (int)Keys.F2);
-            _nextClipboardViewer = (IntPtr)SetClipboardViewer((int)source.Handle);
-            source.AddHook(WndProc);
+            var helper = new WindowInteropHelper(this);
+            _source = HwndSource.FromHwnd(helper.Handle);
+            _source.AddHook(HwndHook);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            _source.RemoveHook(HwndHook);
+            _source = null;
+            base.OnClosed(e);
+            UnregisterHotkeys();
+        }
+
+        internal void RegisterHotkeys()
+        {
+            var helper = new WindowInteropHelper(this);
+            try
+            {
+                UnregisterHotkeys();
+                RegisterHotKey(helper.Handle, 0, 0, Convert.ToUInt32(Settings.Default.mapHotkey));
+                RegisterHotKey(helper.Handle, 1, 0, Convert.ToUInt32(Settings.Default.zanaHotkey));
+                RegisterHotKey(helper.Handle, 2, 0, Convert.ToUInt32(Settings.Default.cartoHotkey));
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(@"Failed to register hotkeys, please close the application and try again",
+                    @"Failed registering hotkeys", MessageBoxButton.OK, MessageBoxImage.Error);
+                ExtendedStatusStrip.AddStatus(@"Failed registering hotkeys, please restart application.");
+            }
+        }
+
+        internal void UnregisterHotkeys()
+        {
+            var helper = new WindowInteropHelper(this);
+            UnregisterHotKey(helper.Handle, 0);
+            UnregisterHotKey(helper.Handle, 1);
+            UnregisterHotKey(helper.Handle, 2);
         }
 
         private void PopulateLeagues()
@@ -107,6 +153,25 @@ namespace Cartogram
             }
         }
 
+        private void PopulateExperience()
+        {
+            var lines = File.ReadAllLines(Directory.GetCurrentDirectory() + @"\Resources\Experience.csv").Select(a => a.Split(','));
+            var listExp = new List<Experience>();
+            foreach (var line in lines)
+            {
+                int level, expGoal;
+                long experience;
+                var exp = new Experience
+                {
+                    Level = int.TryParse(line[0], out level) ? level : 0,
+                    CurrentExperience = long.TryParse(line[1], out experience) ? experience : 0,
+                    NextLevelExperience = int.TryParse(line[2], out expGoal) ? expGoal : 0
+                };
+                listExp.Add(exp);
+            }
+            _sql.AddExperience(listExp);
+        }
+
         private void RefreshGrids()
         {
             var mapTable = _sql.MapDataTable();
@@ -123,7 +188,7 @@ namespace Cartogram
 
         #region WndProc
 
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             const int WM_DRAWCLIPBOARD = 0x308;
             const int WM_CHANGECBCHAIN = 0x030D;
@@ -147,6 +212,7 @@ namespace Cartogram
                                 if (CurrentMap == null) break;
                                 CurrentMap.ExpBefore = ExpValue();
                                 CurrentMap.League = ComboLeague.Text;
+                                CurrentMap.Character = TextBoxName.Text;
                                 //if (publicOpt)
                                 //{
                                 //    _mySqlId = _mySql.AddMap(CurrentMap);
@@ -162,7 +228,8 @@ namespace Cartogram
                                     _timerTicks = 0;
                                     _mapTimer.Start();
 
-                                    ExtendedStatusStrip.AddStatus(string.Format("Beginning {0} map...", CurrentMap.Name));
+                                    ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
+                                    RefreshGrids();
                                     _state = "DROPS";
                                 }
                                 break;
@@ -263,7 +330,6 @@ namespace Cartogram
         }
 
         #endregion
-
 
         #region Custom Methods
 
@@ -433,7 +499,7 @@ namespace Cartogram
 
             var image = Pix.LoadFromFile(Directory.GetCurrentDirectory() + "\\Screenshot.bmp");
             string result;
-            var tessData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\GumshoeMaps";
+            var tessData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram";
             using (var engine = new TesseractEngine(tessData, "eng", EngineMode.Default))
             {
                 using (var page = engine.Process(image))
@@ -458,23 +524,23 @@ namespace Cartogram
             var currentExperience = Regex.Match(exp, @"(?<=p: ).+?(?=\ )");
             var nextLevel = Regex.Match(exp.Replace("\n", ""), @"(?<=l: ).+?(?=$)");
             int level, percent;
-            Int64 currentExp, expToLevel;
+            long currentExp, expToLevel;
             var expObj = new Experience
             {
                 Level = currentLevel.Success ? int.TryParse(currentLevel.Groups[0].ToString(), out level) ? level : 0 : 0,
                 Percentage = currentPercent.Success ? int.TryParse(currentPercent.Groups[0].ToString(), out percent) ? percent : 0 : 0,
-                CurrentExperience = currentExperience.Success ? Int64.TryParse(currentExperience.Groups[0].ToString().Replace(",", ""), out currentExp) ? currentExp : 0 : 0,
-                NextLevelExperience = nextLevel.Success ? Int64.TryParse(nextLevel.Groups[0].ToString().Replace(",", ""), out expToLevel) ? expToLevel : 0 : 0
+                CurrentExperience = currentExperience.Success ? long.TryParse(currentExperience.Groups[0].ToString().Replace(",", ""), out currentExp) ? currentExp : 0 : 0,
+                NextLevelExperience = nextLevel.Success ? long.TryParse(nextLevel.Groups[0].ToString().Replace(",", ""), out expToLevel) ? expToLevel : 0 : 0
             };
             return expObj;
         }
 
         #endregion
 
-        private void _mapTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void _mapTimer_Elapsed(object sender, EventArgs eventArgs)
         {
             _timerTicks++;
-            LabelDuration.Content = string.Format("{0:00}:{1:00}:{2:00}", _timerTicks/3600, (_timerTicks/60)%60, _timerTicks%60);
+            TimerValue.Content = $"{_timerTicks/3600:00}:{(_timerTicks/60)%60:00}:{_timerTicks%60:00}";
         }
 
         public static void SortDataGrid(System.Windows.Controls.DataGrid dataGrid, int columnIndex = 0, ListSortDirection sortDirection = ListSortDirection.Ascending)
@@ -498,29 +564,13 @@ namespace Cartogram
             Canvas.SetTop(ExtendedStatusStrip, -100);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            var xp = ExpValue();
-        }
-
         private void GridMaps_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (GridMaps.SelectedCells.Count <= 0) return;
+            if (GridMaps.SelectedItems.Count <= 0) return;
             var row = (DataRowView)GridMaps.SelectedItems[0];
             var rowId = row["id"].ToString();
             int id;
             if (int.TryParse(rowId, out id) )RefreshDrops(id);
-        }
-
-        public IEnumerable<DataGridRow> GetDataGridRows(System.Windows.Controls.DataGrid grid)
-        {
-            var itemsSource = grid.ItemsSource;
-            if (null == itemsSource) yield return null;
-            foreach (DataGridRow item in itemsSource)
-            {
-                var row = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
-                if (null != row) yield return row;
-            }
         }
 
         private void DataGrid_Documents_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
@@ -540,6 +590,24 @@ namespace Cartogram
             settingsWindow.Show();
         }
 
+        private void GridMaps_DetailsClick(object sender, RoutedEventArgs e)
+        {
+            System.Windows.MessageBox.Show("Hello World");
+        }
+
+        private void GridMaps_DeleteClick(object sender, RoutedEventArgs e)
+        {
+            var rowStr = ((DataRowView)GridMaps.SelectedItem)?.Row.ItemArray[0];
+            int id;
+            if (int.TryParse(rowStr?.ToString(), out id)) _sql.DeleteMap(id);
+            RefreshGrids();
+        }
+
+        private void ComboLeague_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Settings.Default.SelectedLeague = ComboLeague.Text;
+            Settings.Default.Save();
+        }
     }
 
 }
