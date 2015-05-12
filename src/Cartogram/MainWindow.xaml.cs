@@ -14,10 +14,12 @@ using Cartogram.SQL;
 
 using System.Drawing;
 using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Cartogram.JSON;
 using Cartogram.Properties;
 using Tesseract;
+using Brushes = System.Windows.Media.Brushes;
 
 namespace Cartogram
 {
@@ -58,6 +60,7 @@ namespace Cartogram
         internal Map CurrentMap;
         private int _timerTicks;
         private string _state;
+        private IntPtr _handle;
 
         public MainWindow()
         {
@@ -74,13 +77,12 @@ namespace Cartogram
             _mapTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1),
-                IsEnabled = false,
+                IsEnabled = false
             };
             ComboLeague.Text = Settings.Default.SelectedLeague;
             TextBoxName.Text = Settings.Default.CharacterName;
             _mapTimer.Tick += _mapTimer_Elapsed;
-
-            RegisterHotkeys();
+            
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
             _state = "WAITING";
             ExtendedStatusStrip.AddStatus("Welcome back, Exile!");
@@ -94,14 +96,16 @@ namespace Cartogram
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
-            var helper = new WindowInteropHelper(this);
-            _source = HwndSource.FromHwnd(helper.Handle);
-            _source.AddHook(HwndHook);
+            var source = PresentationSource.FromVisual(this) as HwndSource;
+            if (source != null) _handle = source.Handle;
+            _nextClipboardViewer = (IntPtr)SetClipboardViewer((int)source.Handle);
+            source.AddHook(WndProc);
+            RegisterHotkeys();
         }
 
         protected override void OnClosed(EventArgs e)
         {
-            _source.RemoveHook(HwndHook);
+            _source.RemoveHook(WndProc);
             _source = null;
             base.OnClosed(e);
             UnregisterHotkeys();
@@ -109,13 +113,12 @@ namespace Cartogram
 
         internal void RegisterHotkeys()
         {
-            var helper = new WindowInteropHelper(this);
             try
             {
                 UnregisterHotkeys();
-                RegisterHotKey(helper.Handle, 0, 0, Convert.ToUInt32(Settings.Default.mapHotkey));
-                RegisterHotKey(helper.Handle, 1, 0, Convert.ToUInt32(Settings.Default.zanaHotkey));
-                RegisterHotKey(helper.Handle, 2, 0, Convert.ToUInt32(Settings.Default.cartoHotkey));
+                RegisterHotKey(_handle, 0, 0, Convert.ToUInt32(Settings.Default.mapHotkey));
+                RegisterHotKey(_handle, 1, 0, Convert.ToUInt32(Settings.Default.zanaHotkey));
+                RegisterHotKey(_handle, 2, 0, Convert.ToUInt32(Settings.Default.cartoHotkey));
             }
             catch (Exception ex)
             {
@@ -188,7 +191,7 @@ namespace Cartogram
 
         #region WndProc
 
-        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             const int WM_DRAWCLIPBOARD = 0x308;
             const int WM_CHANGECBCHAIN = 0x030D;
@@ -228,6 +231,7 @@ namespace Cartogram
                                     _timerTicks = 0;
                                     _mapTimer.Start();
 
+                                    CurrentMapBorder.BorderBrush = Brushes.Red;
                                     ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
                                     RefreshGrids();
                                     _state = "DROPS";
@@ -292,6 +296,7 @@ namespace Cartogram
                             if (_state == "DROPS")
                             {
                                 _mapTimer.Stop();
+                                CurrentMapBorder.BorderBrush = Brushes.DimGray;
                                 var expAfter = ExpValue();
                                 _sql.FinishMap(CurrentMap.Id, expAfter);
                                 //if (publicOpt && _mySqlId > 0) _mySql.FinishMap(_mySqlId, expAfter);
@@ -304,25 +309,28 @@ namespace Cartogram
                             break;
 
                         case (1):
+                            if (CurrentMap == null) break;
                             if (_state == "ZANA")
                             {
                                 _state = "DROPS";
-                                ExtendedStatusStrip.AddStatus(string.Format("Finished Zana, returning to {0} map", CurrentMap.Name));
+                                ExtendedStatusStrip.AddStatus($"Finished Zana, returning to {CurrentMap.Name} map");
                                 break;
                             }
-                            ExtendedStatusStrip.AddStatus(string.Format("Zana found, press {0} again once zana drops have been recorded.", "Hotkey"));
+                            ExtendedStatusStrip.AddStatus($"Zana found, press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} to toggle back.");
                             _state = "ZANA";
                             break;
+
                         case (2):
                             if (_state == "CARTO")
                             {
                                 _state = "DROPS";
-                                ExtendedStatusStrip.AddStatus(string.Format("Finished Cartogram, returning to {0} map", CurrentMap.Name));
+                                ExtendedStatusStrip.AddStatus($"Finished Cartogram, returning to {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} map");
                                 break;
                             }
-                            ExtendedStatusStrip.AddStatus(string.Format("Cartogram found! press {0} again once map drops have been recorded.", "Hotkey"));
+                            ExtendedStatusStrip.AddStatus($"Cartographer found! press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} when drops recorded.");
                             _state = "CARTO";
                             break;
+
                     }
                     break;
             }
@@ -339,7 +347,7 @@ namespace Cartogram
         /// <returns> TRUE if it contains 'Rarity:' on the first line </returns>
         internal bool CheckClipboard()
         {
-            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text).Replace("\r", "").Split(new[] { '\n' });
+            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text).Replace("\r", "").Split('\n');
             return clipboardContents.Length != -1 && clipboardContents[0].StartsWith("Rarity:");
         }
 
@@ -350,11 +358,11 @@ namespace Cartogram
         internal Map ParseClipboard()
         {
             var clipboardValue = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
-            var clipboardContents = clipboardValue.Replace("\r", "").Split(new[] { '\n' });
+            var clipboardContents = clipboardValue.Replace("\r", "").Split('\n');
             Map newMap;
-            if (!clipboardValue.Contains("Map")) return null;
-            if (clipboardValue.Contains("Sacrifice at")) return null;
-            if (clipboardContents[0].Replace("Rarity: ", "") == "Normal" || clipboardContents[0].Replace("Rarity: ", "") == "Magic")
+            if (!clipboardValue.Contains("Map") || clipboardValue.Contains("Sacrifice at")) return null;
+
+            if (clipboardContents[0].Contains("Normal") || clipboardContents[0].Contains("Magic"))
             {
                 newMap = new Map
                 {
@@ -365,16 +373,19 @@ namespace Cartogram
                 };
                 if (clipboardValue.Contains("Item Quantity:"))
                 {
-                    newMap.Quantity =
-                        int.Parse(clipboardContents[4].Replace("Item Quantity: +", "").Replace("% (augmented)", ""));
+                    int quantity;
+                    if (int.TryParse(clipboardContents[4].Replace("Item Quantity: +", "").Replace("% (augmented)", ""), out quantity))
+                        newMap.Quantity = quantity;
                 }
                 if (clipboardValue.Contains("Quality:"))
                 {
-                    newMap.Quality =
-                        int.Parse(clipboardContents[5].Replace("Quality: +", "").Replace("% (augmented)", ""));
+                    int quality;
+                    if (int.TryParse(clipboardContents[5].Replace("Quality: +", "").Replace("% (augmented)", ""), out quality))
+                        newMap.Quality = quality;
                 }
                 return newMap;
             }
+
             if (clipboardContents[0].Replace("Rarity: ", "") == "Rare" || clipboardContents[0].Replace("Rarity: ", "") == "Unique")
             {
                 var i = 0;
@@ -390,13 +401,15 @@ namespace Cartogram
 
                 if (clipboardValue.Contains("Item Quantity:"))
                 {
-                    newMap.Quantity =
-                        int.Parse(clipboardContents[5].Replace("Item Quantity: +", "").Replace("% (augmented)", ""));
+                    int quantity;
+                    if (int.TryParse(clipboardContents[5].Replace("Item Quantity: +", "").Replace("% (augmented)", ""), out quantity))
+                        newMap.Quantity = quantity;
                 }
                 if (clipboardValue.Contains("Quality:"))
                 {
-                    newMap.Quality =
-                        int.Parse(clipboardContents[6].Replace("Quality: +", "").Replace("% (augmented)", ""));
+                    int quality;
+                    if (int.TryParse(clipboardContents[6].Replace("Quality: +", "").Replace("% (augmented)", ""), out quality))
+                        newMap.Quality = quality;
                 }
                 return newMap;
             }
@@ -471,7 +484,9 @@ namespace Cartogram
                "Underground Sea","Arachnid Nest","Colonnade", "Dry Woods", "Strand", "Temple",
                "Jungle Valley", "Torture Chamber", "Waste Pool", "Mine", "Dry Peninsula", "Canyon",
                "Cells", "Dark Forest", "Gorge", "Maze", "Underground River", "Bazaar", "Necropolis",
-               "Plateau", "Crematorium", "Precinct", "Shipyard", "Shrine", "Villa", "Palace"
+               "Plateau", "Crematorium", "Precinct", "Shipyard", "Shrine", "Villa", "Palace", "Pit",
+               "Desert", "Aqueduct", "Quarry", "Arena", "Abyss", "Village Ruin", "Wasteland", "Excavation",
+               "Waterways", "Core", "Volcano", "Colosseum"
             };
 
             foreach (var x in maps.Where(inputLine.Contains))

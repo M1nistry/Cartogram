@@ -19,6 +19,7 @@ namespace Cartogram
             InitializeComponent();
             //kConverter = new KeysConverter();
             _main = MainWindow.GetSingleton();
+            Icon = _main.Icon;
             ZanaInt.Content = Properties.Settings.Default.ZanaQuantity.ToString();
             ZanaValue.Value = Properties.Settings.Default.ZanaQuantity;
             ButtonMap.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.mapHotkey).ToString();
@@ -55,7 +56,7 @@ namespace Cartogram
                         button.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.zanaHotkey).ToString();
                         break;
                     case ("ButtonCarto"):
-                        button.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.cartoHotkey);
+                        button.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.cartoHotkey).ToString();
                         break;
                     default:
                         if (button.Content?.ToString() != string.Empty && button.Content?.ToString() != "None") break;
