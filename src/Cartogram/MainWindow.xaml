@@ -2,7 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Cartogram"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
         x:Name="Cartogram" x:Class="Cartogram.MainWindow"
         Title="Cartogram" Height="500" Width="450" MaxWidth="450" MinWidth="450" Icon="Resources/24.ico">
     <Grid>
@@ -13,6 +14,13 @@
             <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
         <Canvas x:Name="CanvasHeader" HorizontalAlignment="Left" Height="90" VerticalAlignment="Top" Width="442" Background="#FFF1EDED">
+            <Label ToolTipService.ShowDuration="12000" Name="LabelShowToolip" Content="Shows tooltip">
+                <Label.ToolTip>
+                    <ToolTip>
+                        <TextBlock>Hello world!</TextBlock>
+                    </ToolTip>
+                </Label.ToolTip>
+            </Label>
             <Canvas x:Name="CanvasInformation" Height="49" Canvas.Left="10" Canvas.Top="25" Width="260" Background="White">
                 <Label x:Name="LabelRunToday" Content="Maps run today:" ToolTip="Maps run in the last 24 hours"/>
                 <Label x:Name="LabelMapsRunValue" Content="0" Canvas.Left="{Binding ActualWidth, ElementName=LabelRunToday}"/>
@@ -27,8 +35,14 @@
             </Canvas>
             <ComboBox x:Name="ComboLeague" Canvas.Left="275" Canvas.Top="25" Width="157" Height="22" SelectionChanged="ComboLeague_SelectionChanged"/>
             <Label x:Name="LabelName" Content="Name:" Canvas.Left="275" Canvas.Top="49" ToolTip="Name of the character this map is being run on. This is used to be able to later breakdown maps run by a specified character and see their progression of experience. "/>
-            <TextBox x:Name="TextBoxName" Height="23" Canvas.Left="319" TextWrapping="Wrap" Canvas.Top="52" Width="113" ToolTip="Enter your characters name here" LostFocus="TextBoxName_LostFocus"/>
-            <Menu x:Name="MainMenu" Height="22" Width="442" Background="#FFF1EDED" BorderThickness="0,2,0,0">
+            <ComboBox x:Name="ComboBoxName" Height="23" Canvas.Left="319" Canvas.Top="52" Width="113" ToolTip="Enter your characters name here. Right click the drop down arrow to remove the currently selected name." LostFocus="TextBoxName_LostFocus" ItemsSource="{Binding}" IsEditable="True">
+                <ComboBox.ContextMenu>
+                    <ContextMenu>
+                    <MenuItem Header="Remove" Click="NameRemove_Click"/>
+                    </ContextMenu>
+                </ComboBox.ContextMenu>
+            </ComboBox>
+            <Menu x:Name="MainMenu" Height="22" Width="442" Background="#FFF1EDED" BorderThickness="0,2,0,0" PreviewMouseDown="MainMenu_PreviewMouseDown">
                 <MenuItem Header="File">
                     <MenuItem Header="Exit"/>
                 </MenuItem>
@@ -42,7 +56,7 @@
             </Menu>
         </Canvas>
         <DockPanel Grid.Row="1" Background="#FFF1EDED" >
-            <DataGrid x:Name="GridMaps" ItemsSource="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Width="422" AutoGenerateColumns="False" MinWidth="422" VerticalScrollBarVisibility="Hidden" Background="White" FontSize="11" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" SelectionChanged="GridMaps_SelectionChanged" IsReadOnly="True" ColumnHeaderHeight="22" AlternatingRowBackground="#BFE3E3E3">
+            <DataGrid x:Name="GridMaps" ItemsSource="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Width="422" AutoGenerateColumns="False" MinWidth="422" VerticalScrollBarVisibility="Hidden" Background="White" FontSize="11" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" SelectionChanged="GridMaps_SelectionChanged" IsReadOnly="True" ColumnHeaderHeight="22" AlternatingRowBackground="#BFE3E3E3" RowHeight="17">
                 <DataGrid.CellStyle>
                     <Style TargetType="{x:Type DataGridCell}">
                         <Setter Property="BorderThickness" Value="0"/>
@@ -105,6 +119,6 @@
         <Canvas Grid.Row="3">
             <local:ExtendedStatusStrip x:Name="ExtendedStatusStrip" Width="442" Height="25" Canvas.Top="0" Timestamps="True"/>
         </Canvas>
-
     </Grid>
+    
 </Window>

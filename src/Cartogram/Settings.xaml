@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" d:DesignWidth="250" Height="188" Width="250" WindowStyle="ToolWindow" Title="Settings">
+             mc:Ignorable="d" d:DesignWidth="250" Height="298" Width="250" WindowStyle="ToolWindow" Title="Settings">
     <Grid>
         <Border BorderBrush="Black" BorderThickness="1"/>
         <Canvas x:Name="CanvasSettings" Background="#FFF1EDED">
@@ -28,8 +28,8 @@
                 <Label Grid.Row="2" Grid.Column="0" Content="Toggle Cartographer" Height="30"/>
                 <Button x:Name="ButtonCartographer" Grid.Column="1" Grid.Row="2" Content="" Margin="1,1,1,1" BorderBrush="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Click="ButtonHotkey_Click" PreviewKeyDown="ButtonHotkey_PreviewKeyDown"/>
             </Grid>
-            <Button x:Name="ButtonSave" Content="Save" Canvas.Left="75" Canvas.Top="128" Width="75" ToolTip="Saves these settings to be used by the application." Click="ButtonSave_Click"/>
-            <Button x:Name="ButtonCancel" Content="Cancel" Canvas.Left="155" Canvas.Top="128" Width="75" ToolTip="Cancels any changes and reverts to the previous settings values." Click="ButtonCancel_Click"/>
+            <Button x:Name="ButtonSave" Content="Save" Canvas.Left="107" Canvas.Top="238" Width="60" ToolTip="Saves these settings to be used by the application." Click="ButtonSave_Click"/>
+            <Button x:Name="ButtonCancel" Content="Cancel" Canvas.Left="172" Canvas.Top="238" Width="60" ToolTip="Cancels any changes and reverts to the previous settings values." Click="ButtonCancel_Click"/>
         </Canvas>
     </Grid>
 </Window>

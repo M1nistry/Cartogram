@@ -53,7 +53,7 @@ namespace Cartogram
         #endregion
 
         IntPtr _nextClipboardViewer;
-        private Sqlite _sql;
+        internal Sqlite _sql;
         private static MainWindow _main;
 
         private readonly DispatcherTimer _mapTimer;
@@ -80,12 +80,15 @@ namespace Cartogram
                 IsEnabled = false
             };
             ComboLeague.Text = Settings.Default.SelectedLeague;
-            TextBoxName.Text = Settings.Default.CharacterName;
+            
             _mapTimer.Tick += _mapTimer_Elapsed;
             
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
             _state = "WAITING";
             ExtendedStatusStrip.AddStatus("Welcome back, Exile!");
+            LabelShowToolip.Content = "Hello World!";
+            ComboBoxName.DataContext = _sql.CharactersList();
+            ComboBoxName.Text = Settings.Default.CharacterName;
         }
 
         public static MainWindow GetSingleton()
@@ -120,7 +123,7 @@ namespace Cartogram
                 RegisterHotKey(_handle, 1, 0, Convert.ToUInt32(Settings.Default.zanaHotkey));
                 RegisterHotKey(_handle, 2, 0, Convert.ToUInt32(Settings.Default.cartoHotkey));
             }
-            catch (Exception ex)
+            catch (Exception Cuex)
             {
                 System.Windows.MessageBox.Show(@"Failed to register hotkeys, please close the application and try again",
                     @"Failed registering hotkeys", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -154,6 +157,11 @@ namespace Cartogram
             {
                 ComboLeague.Items.Add(league.PrettyName);
             }
+        }
+
+        private void UpdateInformation()
+        {
+            LabelMapsRunValue.Content = _sql.CountMapsToday();
         }
 
         private void PopulateExperience()
@@ -215,7 +223,7 @@ namespace Cartogram
                                 if (CurrentMap == null) break;
                                 CurrentMap.ExpBefore = ExpValue();
                                 CurrentMap.League = ComboLeague.Text;
-                                CurrentMap.Character = TextBoxName.Text;
+                                CurrentMap.Character = ComboBoxName.Text;
                                 //if (publicOpt)
                                 //{
                                 //    _mySqlId = _mySql.AddMap(CurrentMap);
@@ -475,19 +483,7 @@ namespace Cartogram
         /// <returns> Map Name eg. "Vaal Pyramid" </returns>
         private static string MapName(string inputLine)
         {
-            var maps = new[]
-            {
-               "Academy", "Crypt","Dried Lake","Dunes","Dungeon","Grotto","Overgrown Ruin", "Tropical Island",
-               "Arcade","Arsenal","Cemetery","Mountain Ledge","Sewer","Thicket", "Wharf","Ghetto",
-               "Mud Geyser","Reef","Spider Lair","Springs","Vaal Pyramid", "Catacomb", "Overgrown Shrine",
-               "Promenade","Shore","Spider Forest","Tunnel","Bog", "Coves", "Graveyard", "Pier",
-               "Underground Sea","Arachnid Nest","Colonnade", "Dry Woods", "Strand", "Temple",
-               "Jungle Valley", "Torture Chamber", "Waste Pool", "Mine", "Dry Peninsula", "Canyon",
-               "Cells", "Dark Forest", "Gorge", "Maze", "Underground River", "Bazaar", "Necropolis",
-               "Plateau", "Crematorium", "Precinct", "Shipyard", "Shrine", "Villa", "Palace", "Pit",
-               "Desert", "Aqueduct", "Quarry", "Arena", "Abyss", "Village Ruin", "Wasteland", "Excavation",
-               "Waterways", "Core", "Volcano", "Colosseum"
-            };
+            var maps = Maps.MapArray();
 
             foreach (var x in maps.Where(inputLine.Contains))
             {
@@ -595,7 +591,15 @@ namespace Cartogram
 
         private void TextBoxName_LostFocus(object sender, RoutedEventArgs e)
         {
-            Settings.Default.CharacterName = TextBoxName.Text;
+            if (ComboBoxName.Text == string.Empty) return;
+            var currentCharacters = _sql.CharactersList();
+            if (!currentCharacters.Contains(ComboBoxName.Text))
+            {
+                _sql.InsertCharacter(ComboBoxName.Text);
+                currentCharacters.Add(ComboBoxName.Text);
+                ComboBoxName.DataContext = currentCharacters;
+            }
+            Settings.Default.CharacterName = ComboBoxName.Text;
             Settings.Default.Save();
         }
 
@@ -607,7 +611,12 @@ namespace Cartogram
 
         private void GridMaps_DetailsClick(object sender, RoutedEventArgs e)
         {
-            System.Windows.MessageBox.Show("Hello World");
+            var rowStr = ((DataRowView) GridMaps.SelectedItem)?.Row[0];
+            int rowId;
+            if (!int.TryParse(rowStr.ToString(), out rowId)) return;
+            var selectedMap = _sql.GetMap(rowId);
+            var mapDetails = new Details(selectedMap);
+            mapDetails.ShowDialog();
         }
 
         private void GridMaps_DeleteClick(object sender, RoutedEventArgs e)
@@ -622,6 +631,29 @@ namespace Cartogram
         {
             Settings.Default.SelectedLeague = ComboLeague.Text;
             Settings.Default.Save();
+        }
+
+        private void MainMenu_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+        }
+
+        private void NameRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (ComboBoxName.Text == string.Empty) return;
+            
+            if (_sql.DeleteCharacter(ComboBoxName.Text))
+            {
+                ExtendedStatusStrip.AddStatus($"Removed {ComboBoxName.Text} from saved names.");
+                if (Settings.Default.CharacterName == ComboBoxName.Text)
+                    Settings.Default.CharacterName = string.Empty;
+                ComboBoxName.Text = string.Empty;
+                ComboBoxName.IsDropDownOpen = false;
+                ComboBoxName.DataContext = _sql.CharactersList();
+            }
+            else
+            {
+                ExtendedStatusStrip.AddStatus($"Failed to remove {ComboBoxName.Text} from saved names.");
+            }
         }
     }
 

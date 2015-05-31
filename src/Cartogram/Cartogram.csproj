@@ -87,6 +87,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Details.xaml.cs">
+      <DependentUpon>Details.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Experience.cs" />
     <Compile Include="League.cs" />
     <Compile Include="Map.cs" />
@@ -98,6 +101,10 @@
     </Compile>
     <Compile Include="SQL\ISqlInterface.cs" />
     <Compile Include="SQL\Sqlite.cs" />
+    <Page Include="Details.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ExtendedStatusStrip.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

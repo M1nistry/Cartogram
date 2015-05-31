@@ -61,6 +61,9 @@ namespace Cartogram.SQL
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `map_experience` (`map_id` INTEGER, `exp_before` INTEGER, `level_before` INTEGER, `percent_before` INTEGER, 
                                            `exp_after` INTEGER, `level_after` INTEGER, `percent_after` INTEGER);";
                         cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `character_details` (`character_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT);";
+                        cmd.ExecuteNonQuery();
                         return true;
                     }
                 }
@@ -557,5 +560,74 @@ namespace Cartogram.SQL
             }
             return 0;
         }
+
+        internal int CountMapsToday()
+        {
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string countMaps = @"SELECT count(*) FROM `maps` WHERE started_at > @dateStart AND started_at < @dateEnd";
+                using (var cmd = new SQLiteCommand(countMaps, connection))
+                {
+                    cmd.Parameters.AddWithValue("@dateStart", DateTime.Now.ToString("yyyy-MM-dd 00:00:00"));
+                    cmd.Parameters.AddWithValue("@dateEnd", DateTime.Now.ToString("yyyy-MM-dd 23:59:59"));
+                    var value = cmd.ExecuteScalar();
+                    if (value != null) return int.Parse(value.ToString());
+                }
+            }
+            return 0;
+        }
+
+        #region Character Names
+
+        public bool InsertCharacter(string name)
+        {
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string insertName = @"INSERT INTO `character_details` (name) VALUES (@name);";
+                using (var cmd = new SQLiteCommand(insertName, connection))
+                {
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+            }
+        }
+
+        public bool DeleteCharacter(string name)
+        {
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string deleteName = @"DELETE FROM `character_details` WHERE name=@name;";
+                using (var cmd = new SQLiteCommand(deleteName, connection))
+                {
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+            }
+        }
+
+        public List<string> CharactersList()
+        {
+            var characterList = new List<string>();
+
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string characterSelect = @"SELECT * FROM `character_details`";
+                using (var cmd = new SQLiteCommand(characterSelect, connection))
+                {
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            characterList.Add(reader["name"].ToString());
+                        }
+                    }
+                }
+            }
+            return characterList;
+        }
+
+        #endregion
     }
 }

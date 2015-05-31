@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Cartogram
 {
-    class Map : IEquatable<Map>
+    public class Map : IEquatable<Map>
     {
         public int Id { get; set; }
         public int SqlId { get; set; }
@@ -24,6 +24,26 @@ namespace Cartogram
         public bool Equals(Map other)
         {
             return other.Id == Id;
+        }
+    }
+
+    public class Maps
+    {
+        public static string[] MapArray()
+        {
+            return new[]
+            {
+               "Academy", "Crypt","Dried Lake","Dunes","Dungeon","Grotto","Overgrown Ruin", "Tropical Island",
+               "Arcade","Arsenal","Cemetery","Mountain Ledge","Sewer","Thicket", "Wharf","Ghetto",
+               "Mud Geyser","Reef","Spider Lair","Springs","Vaal Pyramid", "Catacomb", "Overgrown Shrine",
+               "Promenade","Shore","Spider Forest","Tunnel","Bog", "Coves", "Graveyard", "Pier",
+               "Underground Sea","Arachnid Nest","Colonnade", "Dry Woods", "Strand", "Temple",
+               "Jungle Valley", "Torture Chamber", "Waste Pool", "Mine", "Dry Peninsula", "Canyon",
+               "Cells", "Dark Forest", "Gorge", "Maze", "Underground River", "Bazaar", "Necropolis",
+               "Plateau", "Crematorium", "Precinct", "Shipyard", "Shrine", "Villa", "Palace", "Pit",
+               "Desert", "Aqueduct", "Quarry", "Arena", "Abyss", "Village Ruin", "Wasteland", "Excavation",
+               "Waterways", "Core", "Volcano", "Colosseum"
+            };
         }
     }
 }
