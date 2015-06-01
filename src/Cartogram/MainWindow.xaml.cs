@@ -309,6 +309,7 @@ namespace Cartogram
                                 _sql.FinishMap(CurrentMap.Id, expAfter);
                                 //if (publicOpt && _mySqlId > 0) _mySql.FinishMap(_mySqlId, expAfter);
                                 _state = "WAITING";
+                                UpdateInformation();
                                 var expDiff = expAfter.CurrentExperience - CurrentMap.ExpBefore.CurrentExperience;
                                 var expGoal = _sql.ExperienceGoal(CurrentMap.ExpBefore.Level);
                                 var percentDiff = (float)expDiff / expGoal;
