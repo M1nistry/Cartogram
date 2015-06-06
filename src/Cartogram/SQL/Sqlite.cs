@@ -64,6 +64,10 @@ namespace Cartogram.SQL
 
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `character_details` (`character_id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT);";
                         cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `map_information` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT, `unique` TINYINT, 
+                                            `boss` TEXT, `boss_information` TEXT, `description` TEXT);";
+                        cmd.ExecuteNonQuery();
                         return true;
                     }
                 }
@@ -556,6 +560,51 @@ namespace Cartogram.SQL
                     int exp;
                     var value = cmd.ExecuteScalar();
                     if (value != null && int.TryParse(value.ToString(), out exp)) return exp;
+                }
+            }
+            return 0;
+        }
+
+        public void AddInformation(List<MapInformation> informationList)
+        {
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string insertExp = @"INSERT INTO `map_information` (name, unique, zone, boss, boss_information, description) VALUES (@name, @unique, @zone
+                                            @boss, @bossinfo, @description);";
+                var transaction = connection.BeginTransaction();
+                using (var cmd = new SQLiteCommand(insertExp, connection))
+                {
+                    cmd.Parameters.AddWithValue("@name", "");
+                    cmd.Parameters.AddWithValue("@unique", "");
+                    cmd.Parameters.AddWithValue("@zone", "");
+                    cmd.Parameters.AddWithValue("@boss", "");
+                    cmd.Parameters.AddWithValue("@bossinfo", "");
+                    cmd.Parameters.AddWithValue("@description", "");
+                    foreach (var item in informationList)
+                    {
+                        cmd.Parameters["@name"].Value = item.Name;
+                        cmd.Parameters["@unique"].Value = item.Unique;
+                        cmd.Parameters["@zone"].Value = item.Zone;
+                        cmd.Parameters["@boss"].Value = item.Boss;
+                        cmd.Parameters["@bossinfo"].Value = item.BossDetails;
+                        cmd.Parameters["@description"].Value = item.Description;
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                transaction.Commit();
+            }
+        }
+
+        public int InformationCount()
+        {
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string countQuery = @"SELECT count(*) FROM `map_information`";
+                using (var cmd = new SQLiteCommand(countQuery, connection))
+                {
+                    var value = cmd.ExecuteScalar();
+                    int count;
+                    if (int.TryParse(value?.ToString(), out count)) return count;
                 }
             }
             return 0;

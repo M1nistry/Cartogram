@@ -93,8 +93,12 @@
     <Compile Include="Experience.cs" />
     <Compile Include="League.cs" />
     <Compile Include="Map.cs" />
+    <Compile Include="MapInformation.cs" />
     <Compile Include="MapTooltip.xaml.cs">
       <DependentUpon>MapTooltip.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="NewMap.xaml.cs">
+      <DependentUpon>NewMap.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
@@ -127,6 +131,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="MapTooltip.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="NewMap.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

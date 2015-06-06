@@ -7,9 +7,6 @@
     <Grid>
         <Border BorderBrush="Black" BorderThickness="1"/>
         <Canvas x:Name="CanvasSettings" Background="#FFF1EDED">
-            <Label x:Name="ZanaLevel" Content="Zana Level: " Canvas.Top="10" Canvas.Left="10"/>
-            <Slider x:Name="ZanaValue" Canvas.Top="14" Canvas.Left="80" Width="100" Maximum="8" ValueChanged="ZanaValue_ValueChanged" SmallChange="1000"/>
-            <Label x:Name="ZanaInt" Content="0"  Canvas.Top="10" Canvas.Left="190"></Label>
             <Grid x:Name="GridHotkeys" Height="75" Canvas.Left="10" Canvas.Top="45" Width="220">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="20"></RowDefinition>

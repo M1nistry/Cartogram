@@ -33,15 +33,6 @@
                 <Label x:Name="TimerValue" Canvas.Top="20" Canvas.Left="{Binding ActualWidth, ElementName=LabelDuration}" Content="00:00:00"/>
                 <Border x:Name="CurrentMapBorder" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" BorderThickness="1" Height="50" Width="260" CornerRadius="1"/>
             </Canvas>
-            <ComboBox x:Name="ComboLeague" Canvas.Left="275" Canvas.Top="25" Width="157" Height="22" SelectionChanged="ComboLeague_SelectionChanged"/>
-            <Label x:Name="LabelName" Content="Name:" Canvas.Left="275" Canvas.Top="49" ToolTip="Name of the character this map is being run on. This is used to be able to later breakdown maps run by a specified character and see their progression of experience. "/>
-            <ComboBox x:Name="ComboBoxName" Height="23" Canvas.Left="319" Canvas.Top="52" Width="113" ToolTip="Enter your characters name here. Right click the drop down arrow to remove the currently selected name." LostFocus="TextBoxName_LostFocus" ItemsSource="{Binding}" IsEditable="True">
-                <ComboBox.ContextMenu>
-                    <ContextMenu>
-                    <MenuItem Header="Remove" Click="NameRemove_Click"/>
-                    </ContextMenu>
-                </ComboBox.ContextMenu>
-            </ComboBox>
             <Menu x:Name="MainMenu" Height="22" Width="442" Background="#FFF1EDED" BorderThickness="0,2,0,0" PreviewMouseDown="MainMenu_PreviewMouseDown">
                 <MenuItem Header="File">
                     <MenuItem Header="Exit"/>
@@ -54,6 +45,7 @@
                     <MenuItem Header="About"/>
                 </MenuItem>
             </Menu>
+            <Button x:Name="button" Content="Button" Canvas.Left="304" Canvas.Top="28" Width="75" Click="button_Click"/>
         </Canvas>
         <DockPanel Grid.Row="1" Background="#FFF1EDED" >
             <DataGrid x:Name="GridMaps" ItemsSource="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Width="422" AutoGenerateColumns="False" MinWidth="422" VerticalScrollBarVisibility="Hidden" Background="White" FontSize="11" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" SelectionChanged="GridMaps_SelectionChanged" IsReadOnly="True" ColumnHeaderHeight="22" AlternatingRowBackground="#BFE3E3E3" RowHeight="17">
@@ -91,7 +83,7 @@
                 </DataGrid.Resources>
                 <DataGrid.RowStyle>
                     <Style TargetType="{x:Type DataGridRow}">
-                        <EventSetter Event="FrameworkElement.RequestBringIntoView" Handler="DataGrid_Documents_RequestBringIntoView"  />
+                        <EventSetter Event="RequestBringIntoView" Handler="DataGrid_Documents_RequestBringIntoView"  />
                     </Style>
                 </DataGrid.RowStyle>
                 <DataGrid.CellStyle>
@@ -120,5 +112,5 @@
             <local:ExtendedStatusStrip x:Name="ExtendedStatusStrip" Width="442" Height="25" Canvas.Top="0" Timestamps="True"/>
         </Canvas>
     </Grid>
-    
+
 </Window>

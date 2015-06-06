@@ -20,6 +20,7 @@ namespace Cartogram
         public string Notes { get; set; }
         public string League { get; set; }
         public string Character { get; set; }
+        public bool OwnMap { get; set; }
 
         public bool Equals(Map other)
         {

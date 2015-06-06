@@ -21,17 +21,11 @@ namespace Cartogram
             //kConverter = new KeysConverter();
             _main = MainWindow.GetSingleton();
             Icon = _main.Icon;
-            ZanaInt.Content = Properties.Settings.Default.ZanaQuantity.ToString();
-            ZanaValue.Value = Properties.Settings.Default.ZanaQuantity;
             ButtonMap.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.mapHotkey).ToString();
             ButtonZana.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.zanaHotkey).ToString();
             ButtonCartographer.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.cartoHotkey);
         }
 
-        private void ZanaValue_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            ZanaInt.Content = ZanaValue.Value.ToString("0");
-        }
 
         private void ButtonHotkey_Click(object sender, RoutedEventArgs e)
         {
@@ -111,10 +105,6 @@ namespace Cartogram
 
         private void ButtonSave_Click(object sender, RoutedEventArgs e)
         {
-            int zanaQuantity;
-            Properties.Settings.Default.ZanaQuantity = int.TryParse(ZanaInt.Content.ToString(), out zanaQuantity)
-                ? zanaQuantity
-                : 0;
             Properties.Settings.Default.Save();
             _main.RegisterHotkeys();
             Close();

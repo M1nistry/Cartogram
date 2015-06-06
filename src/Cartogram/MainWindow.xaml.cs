@@ -16,7 +16,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Cartogram.JSON;
 using Cartogram.Properties;
 using Tesseract;
 using Brushes = System.Windows.Media.Brushes;
@@ -69,17 +68,16 @@ namespace Cartogram
             _sql = new Sqlite();
             _main = this;
             if (_sql.ExperienceCount() != 100) PopulateExperience();
+            PopulateMapInformation();
 
             RefreshGrids();
             RefreshDrops(0);
-            PopulateLeagues();
             ScrollViewer.SetCanContentScroll(GridDrops, false);
             _mapTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1),
                 IsEnabled = false
             };
-            ComboLeague.Text = Settings.Default.SelectedLeague;
             
             _mapTimer.Tick += _mapTimer_Elapsed;
             
@@ -87,8 +85,6 @@ namespace Cartogram
             _state = "WAITING";
             ExtendedStatusStrip.AddStatus("Welcome back, Exile!");
             LabelShowToolip.Content = "Hello World!";
-            ComboBoxName.DataContext = _sql.CharactersList();
-            ComboBoxName.Text = Settings.Default.CharacterName;
         }
 
         public static MainWindow GetSingleton()
@@ -139,29 +135,14 @@ namespace Cartogram
             UnregisterHotKey(helper.Handle, 2);
         }
 
-        private void PopulateLeagues()
-        {
-            var jObject = JsonHandler.ParseJsonObject("http://api.exiletools.com/ladder?listleagues=1");
-            var leagueList = new List<League>();
-            foreach (var entry in jObject)
-            {
-                dynamic values = entry.Value;
-                var league = new League
-                {
-                    Active = values["active"].ToString() == "1",
-                    PrettyName = values["prettyName"].ToString(),
-                };
-                leagueList.Add(league);
-            }
-            foreach (var league in leagueList.Where(league => league.Active))
-            {
-                ComboLeague.Items.Add(league.PrettyName);
-            }
-        }
+        
 
         private void UpdateInformation()
         {
             LabelMapsRunValue.Content = _sql.CountMapsToday();
+
+            CanvasInformation.Visibility = Visibility.Visible;
+            CanvasCurrentMap.Visibility = Visibility.Hidden;
         }
 
         private void PopulateExperience()
@@ -181,6 +162,23 @@ namespace Cartogram
                 listExp.Add(exp);
             }
             _sql.AddExperience(listExp);
+        }
+
+        private void PopulateMapInformation()
+        {
+            var lines = File.ReadAllLines(Directory.GetCurrentDirectory() + @"\Resources\MapInformation.csv")
+                    .Select(a => a.Split(','));
+            if (_sql.InformationCount() == lines.Count()) return;
+            var listMapInformation = lines.Select(line => new MapInformation
+            {
+                Name = line[0],
+                Unique = line[1] == "Yes" ? 1 : 0,
+                Zone = line[2],
+                Boss = line[3],
+                BossDetails = line[4],
+                Description = line[5]
+            }).ToList();
+            _sql.AddInformation(listMapInformation);
         }
 
         private void RefreshGrids()
@@ -210,11 +208,6 @@ namespace Cartogram
                 case WM_DRAWCLIPBOARD:
                     if (CheckClipboard())
                     {
-                        if (ComboLeague.Text == string.Empty && Visibility == Visibility.Visible)
-                        {
-                            System.Windows.MessageBox.Show(@"Please verify that you have selected a league and try again.", @"Error!", MessageBoxButton.OK, MessageBoxImage.Hand);
-                            return IntPtr.Zero;
-                        }
                         var clipboard = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
                         switch (_state)
                         {
@@ -222,8 +215,12 @@ namespace Cartogram
                                 CurrentMap = ParseClipboard();
                                 if (CurrentMap == null) break;
                                 CurrentMap.ExpBefore = ExpValue();
-                                CurrentMap.League = ComboLeague.Text;
-                                CurrentMap.Character = ComboBoxName.Text;
+                                var newMap = new NewMap();
+                                newMap.ShowDialog();
+                                if (newMap.Cancelled) return IntPtr.Zero;
+                                CurrentMap.League = newMap.League;
+                                CurrentMap.Character = newMap.Character;
+                                CurrentMap.OwnMap = newMap.OwnMap;
                                 //if (publicOpt)
                                 //{
                                 //    _mySqlId = _mySql.AddMap(CurrentMap);
@@ -590,20 +587,6 @@ namespace Cartogram
             e.Handled = true;
         }
 
-        private void TextBoxName_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (ComboBoxName.Text == string.Empty) return;
-            var currentCharacters = _sql.CharactersList();
-            if (!currentCharacters.Contains(ComboBoxName.Text))
-            {
-                _sql.InsertCharacter(ComboBoxName.Text);
-                currentCharacters.Add(ComboBoxName.Text);
-                ComboBoxName.DataContext = currentCharacters;
-            }
-            Settings.Default.CharacterName = ComboBoxName.Text;
-            Settings.Default.Save();
-        }
-
         private void MenuSettings_Click(object sender, RoutedEventArgs e)
         {
             var settingsWindow = new ApplicationSettings();
@@ -628,33 +611,15 @@ namespace Cartogram
             RefreshGrids();
         }
 
-        private void ComboLeague_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            Settings.Default.SelectedLeague = ComboLeague.Text;
-            Settings.Default.Save();
-        }
 
         private void MainMenu_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
         }
 
-        private void NameRemove_Click(object sender, RoutedEventArgs e)
+        private void button_Click(object sender, RoutedEventArgs e)
         {
-            if (ComboBoxName.Text == string.Empty) return;
-            
-            if (_sql.DeleteCharacter(ComboBoxName.Text))
-            {
-                ExtendedStatusStrip.AddStatus($"Removed {ComboBoxName.Text} from saved names.");
-                if (Settings.Default.CharacterName == ComboBoxName.Text)
-                    Settings.Default.CharacterName = string.Empty;
-                ComboBoxName.Text = string.Empty;
-                ComboBoxName.IsDropDownOpen = false;
-                ComboBoxName.DataContext = _sql.CharactersList();
-            }
-            else
-            {
-                ExtendedStatusStrip.AddStatus($"Failed to remove {ComboBoxName.Text} from saved names.");
-            }
+            var newMap = new NewMap();
+            newMap.ShowDialog();
         }
     }
 
