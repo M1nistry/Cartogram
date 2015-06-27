@@ -52,7 +52,6 @@ namespace Cartogram
         #endregion
 
         IntPtr _nextClipboardViewer;
-        internal Sqlite _sql;
         private static MainWindow _main;
 
         private readonly DispatcherTimer _mapTimer;
@@ -65,9 +64,9 @@ namespace Cartogram
         {
             InitializeComponent();
 
-            _sql = new Sqlite();
+            //Sqlite = new Sqlite();
             _main = this;
-            if (_sql.ExperienceCount() != 100) PopulateExperience();
+            if (Sqlite.ExperienceCount() != 100) PopulateExperience();
             PopulateMapInformation();
 
             RefreshGrids();
@@ -139,7 +138,7 @@ namespace Cartogram
 
         private void UpdateInformation()
         {
-            LabelMapsRunValue.Content = _sql.CountMapsToday();
+            LabelMapsRunValue.Content = Sqlite.CountMapsToday();
 
             CanvasInformation.Visibility = Visibility.Visible;
             CanvasCurrentMap.Visibility = Visibility.Hidden;
@@ -161,14 +160,14 @@ namespace Cartogram
                 };
                 listExp.Add(exp);
             }
-            _sql.AddExperience(listExp);
+            Sqlite.AddExperience(listExp);
         }
 
         private void PopulateMapInformation()
         {
             var lines = File.ReadAllLines(Directory.GetCurrentDirectory() + @"\Resources\MapInformation.csv")
                     .Select(a => a.Split(','));
-            if (_sql.InformationCount() == lines.Count()) return;
+            if (Sqlite.InformationCount() == lines.Count()) return;
             var listMapInformation = lines.Select(line => new MapInformation
             {
                 Name = line[0],
@@ -178,19 +177,19 @@ namespace Cartogram
                 BossDetails = line[4],
                 Description = line[5]
             }).ToList();
-            _sql.AddInformation(listMapInformation);
+            Sqlite.AddInformation(listMapInformation);
         }
 
         private void RefreshGrids()
         {
-            var mapTable = _sql.MapDataTable();
+            var mapTable = Sqlite.MapDataTable();
             GridMaps.DataContext = mapTable.DefaultView;
             SortDataGrid(GridMaps, 0, ListSortDirection.Descending);
         }
 
         private void RefreshDrops(int rowId)
         {
-            var dropTable = _sql.DropDataTable(rowId);
+            var dropTable = Sqlite.DropDataTable(rowId);
             GridDrops.DataContext = dropTable.DefaultView;
         }
 
@@ -206,28 +205,28 @@ namespace Cartogram
             switch (msg)
             {
                 case WM_DRAWCLIPBOARD:
-                    if (CheckClipboard())
+                    if (ParseHandler.CheckClipboard())
                     {
                         var clipboard = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
                         switch (_state)
                         {
                             case ("WAITING"):
-                                CurrentMap = ParseClipboard();
+                                CurrentMap = ParseHandler.ParseClipboard();
                                 if (CurrentMap == null) break;
                                 CurrentMap.ExpBefore = ExpValue();
                                 var newMap = new NewMap();
                                 newMap.ShowDialog();
                                 if (newMap.Cancelled) return IntPtr.Zero;
-                                CurrentMap.League = newMap.League;
-                                CurrentMap.Character = newMap.Character;
-                                CurrentMap.OwnMap = newMap.OwnMap;
+                                //CurrentMap.League = newMap.League;
+                                //CurrentMap.Character = newMap.Character;
+                                //CurrentMap.OwnMap = newMap.OwnMap;
                                 //if (publicOpt)
                                 //{
                                 //    _mySqlId = _mySql.AddMap(CurrentMap);
                                 //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
                                 //}
                                 //CurrentMap.SqlId = _mySqlId;
-                                CurrentMap.Id = _sql.AddMap(CurrentMap);
+                                CurrentMap.Id = Sqlite.AddMap(CurrentMap);
                                 if (CurrentMap.Id > 0)
                                 {
                                     CanvasInformation.Visibility = Visibility.Hidden;
@@ -249,22 +248,22 @@ namespace Cartogram
                                 {
                                     if (clipboard.Contains("Map"))
                                     {
-                                        var parsedMap = ParseClipboard();
+                                        var parsedMap = ParseHandler.ParseClipboard();
                                         if (parsedMap == null) break;
-                                        _sql.AddDrop(parsedMap, CurrentMap.Id);
+                                        Sqlite.AddDrop(parsedMap, CurrentMap.Id);
                                         //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(parsedMap, _mySqlId);
                                     }
                                     if (clipboard.Contains("Currency"))
                                     {
-                                        var parsedCurrency = ParseCurrency();
-                                        _sql.AddCurrency(CurrentMap.Id, parsedCurrency);
+                                        var parsedCurrency = ParseHandler.ParseCurrency();
+                                        Sqlite.AddCurrency(CurrentMap.Id, parsedCurrency);
                                         //if (publicOpt && _mySqlId > 0) _mySql.AddCurrency(_mySqlId, parsedCurrency);
                                     }
                                     if (!clipboard.Contains("Map") && clipboard.Contains("Unique"))
                                     {
-                                        var parsedUnique = ParseUnique();
-                                        _sql.AddUnique(CurrentMap.Id, parsedUnique);
-                                        //if (publicOpt && _mySqlId > 0) _sql.AddUnique(_mySqlId, parsedUnique);
+                                        var parsedUnique = ParseHandler.ParseUnique();
+                                        Sqlite.AddUnique(CurrentMap.Id, parsedUnique);
+                                        //if (publicOpt && _mySqlId > 0) Sqlite.AddUnique(_mySqlId, parsedUnique);
                                     }
                                 }
                                 catch (Exception)
@@ -275,14 +274,14 @@ namespace Cartogram
                                 break;
                             case ("ZANA"):
                                 if (CurrentMap.Id <= 0) break;
-                                _sql.AddDrop(ParseClipboard(), CurrentMap.Id, 1);
-                                //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(ParseClipboard(), _SqLiteId, 1);
+                                Sqlite.AddDrop(ParseHandler.ParseClipboard(), CurrentMap.Id, 1);
+                                //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(ParseClipboard(), SqliteiteId, 1);
                                 break;
 
                             case ("CARTO"):
                                 if (CurrentMap.Id <= 0) break;
-                                _sql.AddDrop(ParseClipboard(), CurrentMap.Id, 0, 1);
-                                //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(ParseClipboard(), _SqLiteId, 0, 1);
+                                Sqlite.AddDrop(ParseHandler.ParseClipboard(), CurrentMap.Id, 0, 1);
+                                //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(ParseClipboard(), SqliteiteId, 0, 1);
                                 break;
                         }
                     }
@@ -303,12 +302,12 @@ namespace Cartogram
                                 _mapTimer.Stop();
                                 CurrentMapBorder.BorderBrush = Brushes.DimGray;
                                 var expAfter = ExpValue();
-                                _sql.FinishMap(CurrentMap.Id, expAfter);
+                                Sqlite.FinishMap(CurrentMap.Id, expAfter);
                                 //if (publicOpt && _mySqlId > 0) _mySql.FinishMap(_mySqlId, expAfter);
                                 _state = "WAITING";
                                 UpdateInformation();
                                 var expDiff = expAfter.CurrentExperience - CurrentMap.ExpBefore.CurrentExperience;
-                                var expGoal = _sql.ExperienceGoal(CurrentMap.ExpBefore.Level);
+                                var expGoal = Sqlite.ExperienceGoal(CurrentMap.ExpBefore.Level);
                                 var percentDiff = (float)expDiff / expGoal;
                                 //ExtendedStatusStrip.AddStatus(string.Format("Finished {0} map, gained {1} of experience", CurrentMap.Name, percentDiff));
                             }
@@ -347,148 +346,6 @@ namespace Cartogram
 
         #region Custom Methods
 
-        /// <summary>
-        /// Checks the clipboard to determine if it contains PoE Related data or not
-        /// </summary>
-        /// <returns> TRUE if it contains 'Rarity:' on the first line </returns>
-        internal bool CheckClipboard()
-        {
-            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text).Replace("\r", "").Split('\n');
-            return clipboardContents.Length != -1 && clipboardContents[0].StartsWith("Rarity:");
-        }
-
-        /// <summary>
-        /// Parses the information gained off the keyboard to construct a Map Object
-        /// </summary>
-        /// <returns>Map object with details from the clipboard</returns>
-        internal Map ParseClipboard()
-        {
-            var clipboardValue = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
-            var clipboardContents = clipboardValue.Replace("\r", "").Split('\n');
-            Map newMap;
-            if (!clipboardValue.Contains("Map") || clipboardValue.Contains("Sacrifice at")) return null;
-
-            if (clipboardContents[0].Contains("Normal") || clipboardContents[0].Contains("Magic"))
-            {
-                newMap = new Map
-                {
-                    Rarity = clipboardContents[0].Replace("Rarity: ", ""),
-                    Level = int.Parse(clipboardContents[3].Replace("Map Level:", "")),
-                    Name = MapName(clipboardContents[1]),
-                    Affixes = GetAffixes(clipboardContents),
-                };
-                if (clipboardValue.Contains("Item Quantity:"))
-                {
-                    int quantity;
-                    if (int.TryParse(clipboardContents[4].Replace("Item Quantity: +", "").Replace("% (augmented)", ""), out quantity))
-                        newMap.Quantity = quantity;
-                }
-                if (clipboardValue.Contains("Quality:"))
-                {
-                    int quality;
-                    if (int.TryParse(clipboardContents[5].Replace("Quality: +", "").Replace("% (augmented)", ""), out quality))
-                        newMap.Quality = quality;
-                }
-                return newMap;
-            }
-
-            if (clipboardContents[0].Replace("Rarity: ", "") == "Rare" || clipboardContents[0].Replace("Rarity: ", "") == "Unique")
-            {
-                var i = 0;
-                if (clipboardValue.Contains("Unidentified")) i = 1;
-
-                newMap = new Map
-                {
-                    Rarity = clipboardContents[0].Replace("Rarity: ", ""),
-                    Level = int.Parse(clipboardContents[4 - i].Replace("Map Level:", "")),
-                    Affixes = GetAffixes(clipboardContents),
-                };
-                newMap.Name = newMap.Rarity == "Rare" ? MapName(clipboardContents[2 - i]) : MapName(clipboardContents[1]);
-
-                if (clipboardValue.Contains("Item Quantity:"))
-                {
-                    int quantity;
-                    if (int.TryParse(clipboardContents[5].Replace("Item Quantity: +", "").Replace("% (augmented)", ""), out quantity))
-                        newMap.Quantity = quantity;
-                }
-                if (clipboardValue.Contains("Quality:"))
-                {
-                    int quality;
-                    if (int.TryParse(clipboardContents[6].Replace("Quality: +", "").Replace("% (augmented)", ""), out quality))
-                        newMap.Quality = quality;
-                }
-                return newMap;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Parses currency off the clipboard into a KVP of stack size and currency name
-        /// </summary>
-        /// <returns>Stack Count and Name</returns>
-        internal KeyValuePair<int, string> ParseCurrency()
-        {
-            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text).Replace("\r", "").Split(new[] { '\n' });
-            if (clipboardContents[0] != "Rarity: Currency") return new KeyValuePair<int, string>(-1, "");
-
-            var currency = clipboardContents[1].Replace("Orb", "").Replace("of", "").Trim();
-            var size = Regex.Match(clipboardContents[3].Replace("Stack Size: ", ""), @"^.*?(?=/)");
-
-            return new KeyValuePair<int, string>(int.Parse(size.ToString()), currency);
-        }
-
-        /// <summary>
-        /// Parses the name out of a unique non-map item off the clipboard
-        /// </summary>
-        /// <returns>Name of unique item</returns>
-        internal string ParseUnique()
-        {
-            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text).Replace("\r", "").Split(new[] { '\n' });
-            if (clipboardContents[0] != "Rarity: Unique") return "";
-
-            var item = clipboardContents[1];
-            return item;
-        }
-
-        /// <summary>
-        /// Gets the affixes from the clipboard and puts them into a list
-        /// </summary>
-        /// <param name="clipboardContents">The map item as it appears on the clipboard</param>
-        /// <returns>List containing each parameter</returns>
-        private static List<string> GetAffixes(string[] clipboardContents)
-        {
-            var affixes = new List<string>();
-            if (clipboardContents.Count(line => line == "--------") == 4 || clipboardContents.Count(line => line == "--------") == 5)
-            {
-                var lineCount = 0;
-                foreach (var line in clipboardContents)
-                {
-                    if (line == "--------")
-                    {
-                        lineCount++;
-                        continue;
-                    }
-                    if (lineCount < 3) continue;
-                    if (lineCount == 4) break;
-                    affixes.Add(line);
-                }
-            }
-            return affixes;
-        }
-
-        /// <summary> Returns the map name given the complete name </summary>
-        /// <param name="inputLine"> Line containing map name + affixes</param>
-        /// <returns> Map Name eg. "Vaal Pyramid" </returns>
-        private static string MapName(string inputLine)
-        {
-            var maps = Maps.MapArray();
-
-            foreach (var x in maps.Where(inputLine.Contains))
-            {
-                return x;
-            }
-            return inputLine;
-        }
 
         /// <summary>
         /// Uses OCR to parse the experience from the tooltip. Moves the mouse to the desired position automatically
@@ -598,7 +455,7 @@ namespace Cartogram
             var rowStr = ((DataRowView) GridMaps.SelectedItem)?.Row[0];
             int rowId;
             if (!int.TryParse(rowStr.ToString(), out rowId)) return;
-            var selectedMap = _sql.GetMap(rowId);
+            var selectedMap = Sqlite.GetMap(rowId);
             var mapDetails = new Details(selectedMap);
             mapDetails.ShowDialog();
         }
@@ -607,7 +464,7 @@ namespace Cartogram
         {
             var rowStr = ((DataRowView)GridMaps.SelectedItem)?.Row.ItemArray[0];
             int id;
-            if (int.TryParse(rowStr?.ToString(), out id)) _sql.DeleteMap(id);
+            if (int.TryParse(rowStr?.ToString(), out id)) Sqlite.DeleteMap(id);
             RefreshGrids();
         }
 

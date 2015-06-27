@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Cartogram.SQL;
 
 namespace Cartogram
 {
@@ -48,7 +49,7 @@ namespace Cartogram
             var mapDuration = MapDetails.FinishAt - MapDetails.StartAt;
             LabelDuration.Text = $"Duration: {mapDuration}";
             var expGained = MapDetails.ExpAfter.CurrentExperience - MapDetails.ExpBefore.CurrentExperience;
-            var expGoal = _main._sql.ExperienceGoal(MapDetails.ExpBefore.Level);
+            var expGoal = Sqlite.ExperienceGoal(MapDetails.ExpBefore.Level);
             var percentGained = (float) expGained/expGoal;
             LabelExperience.Text = $"Experience Gained: {expGained:#,##0} ({percentGained:P2})";
             if (MapDetails.Notes != string.Empty)

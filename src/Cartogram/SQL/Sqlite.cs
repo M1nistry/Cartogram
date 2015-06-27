@@ -7,22 +7,27 @@ using System.Linq;
 
 namespace Cartogram.SQL
 {
-    class Sqlite
+    public static class Sqlite
     {
-        private readonly string _dbPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram\MapsDB.s3db";
-        private SQLiteConnection Connection { get; set; }
+        private static readonly string _dbPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram\MapsDB.s3db";
+        private static SQLiteConnection Connection { get; set; }
 
-        public Sqlite()
+        static Sqlite()
         {
-            var constring = string.Format(@"Data Source={0};Version=3;", _dbPath);
-            Connection = new SQLiteConnection(constring);
+            //var constring = $@"Data Source={_dbPath};Version=3;";
+            var constring = new SQLiteConnectionStringBuilder
+            {
+                DataSource = _dbPath,
+                Version = 3,
+            };
+            Connection = new SQLiteConnection(constring.ToString());
             if (SetupDb())
             {
 
             }
         }
 
-        private bool SetupDb()
+        private static bool SetupDb()
         {
             if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram"))
             {
@@ -66,7 +71,7 @@ namespace Cartogram.SQL
                         cmd.ExecuteNonQuery();
 
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `map_information` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT, `unique` TINYINT, 
-                                            `boss` TEXT, `boss_information` TEXT, `description` TEXT);";
+                                            `zone` TEXT, `boss` TEXT, `boss_information` TEXT, `description` TEXT);";
                         cmd.ExecuteNonQuery();
                         return true;
                     }
@@ -79,7 +84,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public int AddMap(Map newMap)
+        public static int AddMap(Map newMap)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -126,7 +131,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public Map GetMap(int mapId)
+        public static Map GetMap(int mapId)
         {
             var affixes = MapAffixes(mapId);
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
@@ -179,7 +184,7 @@ namespace Cartogram.SQL
             return null;
         }
 
-        public DataTable MapDataTable()
+        public static DataTable MapDataTable()
         {
             var dtMaps = new DataTable("maps");
             dtMaps.Columns.Add("id", typeof(int));
@@ -225,7 +230,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public DataTable DropDataTable(int mapId)
+        public static DataTable DropDataTable(int mapId)
         {
             var dtDrops = new DataTable("drops");
             dtDrops.Columns.Add("title");
@@ -291,7 +296,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public void AddDrop(Map newMap, int mapId, int zana = 0, int carto = 0)
+        public static void AddDrop(Map newMap, int mapId, int zana = 0, int carto = 0)
         {
             if (newMap == null) return;
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
@@ -312,7 +317,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public int MapDrops(int mapId, string symbol)
+        public static int MapDrops(int mapId, string symbol)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -326,7 +331,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public double ExpGained(int id)
+        public static double ExpGained(int id)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -352,7 +357,7 @@ namespace Cartogram.SQL
             return 0;
         }
 
-        public void AddCurrency(int mapId, KeyValuePair<int, string> currency)
+        public static void AddCurrency(int mapId, KeyValuePair<int, string> currency)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -367,7 +372,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public void AddUnique(int mapId, string name)
+        public static void AddUnique(int mapId, string name)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -381,7 +386,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public List<KeyValuePair<int, string>> MapList(int id)
+        public static List<KeyValuePair<int, string>> MapList(int id)
         {
             var mapList = new List<KeyValuePair<int, string>>();
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
@@ -402,7 +407,7 @@ namespace Cartogram.SQL
             return mapList;
         }
 
-        public List<string> MapAffixes(int id)
+        public static List<string> MapAffixes(int id)
         {
             var affixList = new List<string>();
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
@@ -423,7 +428,7 @@ namespace Cartogram.SQL
             return affixList;
         }
 
-        public void FinishMap(int id, Experience exp)
+        public static void FinishMap(int id, Experience exp)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -446,7 +451,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public bool DeleteMap(int id)
+        public static bool DeleteMap(int id)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -477,7 +482,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public void UpdateNotes(int id, string notes)
+        public static void UpdateNotes(int id, string notes)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -506,7 +511,7 @@ namespace Cartogram.SQL
         //    }
         //}
 
-        public void AddExperience(List<Experience> expList)
+        public static void AddExperience(List<Experience> expList)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -534,7 +539,7 @@ namespace Cartogram.SQL
             cmd.ExecuteNonQuery();
         }
 
-        public int ExperienceCount()
+        public static int ExperienceCount()
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -549,7 +554,7 @@ namespace Cartogram.SQL
             return 0;
         }
 
-        public int ExperienceGoal(int level)
+        public static int ExperienceGoal(int level)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -565,12 +570,12 @@ namespace Cartogram.SQL
             return 0;
         }
 
-        public void AddInformation(List<MapInformation> informationList)
+        public static void AddInformation(List<MapInformation> informationList)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
-                const string insertExp = @"INSERT INTO `map_information` (name, unique, zone, boss, boss_information, description) VALUES (@name, @unique, @zone
-                                            @boss, @bossinfo, @description);";
+                const string insertExp = @"INSERT INTO `map_information` (`name`, `unique`, `zone`, `boss`, `boss_information`, `description`) VALUES (@name, @unique, @zone, " +
+                                         @"@boss, @bossinfo, @description);";
                 var transaction = connection.BeginTransaction();
                 using (var cmd = new SQLiteCommand(insertExp, connection))
                 {
@@ -595,7 +600,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public int InformationCount()
+        public static int InformationCount()
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -610,7 +615,7 @@ namespace Cartogram.SQL
             return 0;
         }
 
-        internal int CountMapsToday()
+        internal static int CountMapsToday()
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -628,7 +633,7 @@ namespace Cartogram.SQL
 
         #region Character Names
 
-        public bool InsertCharacter(string name)
+        public static bool InsertCharacter(string name)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -642,7 +647,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public bool DeleteCharacter(string name)
+        public static bool DeleteCharacter(string name)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
@@ -656,7 +661,7 @@ namespace Cartogram.SQL
             }
         }
 
-        public List<string> CharactersList()
+        public static List<string> CharactersList()
         {
             var characterList = new List<string>();
 
@@ -675,6 +680,69 @@ namespace Cartogram.SQL
                 }
             }
             return characterList;
+        }
+
+        #endregion
+
+        #region Map Information
+
+        internal static bool InsertInformation(List<MapInformation> mapInformation)
+        {
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string insertInformation = @"INSERT INTO `map_information` (name, unique, boss, boss_information, description, zone) VALUES 
+                                            (@name, @unique, @boss, @bossinfo, @desc, @zone);";
+                using (var cmd = new SQLiteCommand(insertInformation, connection))
+                {
+                    cmd.Parameters.AddWithValue("@name", "");
+                    cmd.Parameters.AddWithValue("@unique", "");
+                    cmd.Parameters.AddWithValue("@boss", "");
+                    cmd.Parameters.AddWithValue("@bossinfo", "");
+                    cmd.Parameters.AddWithValue("@desc", "");
+                    cmd.Parameters.AddWithValue("@zone", "");
+                    foreach (var mapInfo in mapInformation)
+                    {
+                        cmd.Parameters["@name"].Value = mapInfo.Name;
+                        cmd.Parameters["@unique"].Value = mapInfo.Unique;
+                        cmd.Parameters["@boss"].Value = mapInfo.Boss;
+                        cmd.Parameters["@bossinfo"].Value = mapInfo.BossDetails;
+                        cmd.Parameters["@desc"].Value = mapInfo.Description;
+                        cmd.Parameters["@zone"].Value = mapInfo.Zone;
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            return true;
+        }
+
+        internal static MapInformation MapInformation(string mapName)
+        {
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string selectInformation = @"SELECT * FROM `map_information` WHERE name=@name;";
+                using (var cmd = new SQLiteCommand(selectInformation, connection))
+                {
+                    cmd.Parameters.AddWithValue("@name", mapName);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var unique = 0;
+                            var mapInformation = new MapInformation
+                            {
+                                Name = reader["name"].ToString(),
+                                Boss = reader["boss"].ToString(),
+                                BossDetails = reader["boss_information"].ToString(),
+                                Unique = int.TryParse(reader["unique"].ToString(), out unique) ? unique : 0,
+                                Description = reader["description"].ToString(),
+                                Zone = reader["zone"].ToString()
+                            };
+                            return mapInformation;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         #endregion
