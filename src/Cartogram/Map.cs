@@ -12,6 +12,8 @@ namespace Cartogram
         public string Name { get; set; }
         public int Quality { get; set; }
         public int Quantity { get; set; }
+        public int ItemRarity { get; set; }
+        public int PackSize { get; set; }
         public List<string> Affixes { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime FinishAt { get; set; }
@@ -21,6 +23,7 @@ namespace Cartogram
         public string League { get; set; }
         public string Character { get; set; }
         public bool OwnMap { get; set; }
+        public bool Unidentified { get; set; }
 
         public bool Equals(Map other)
         {

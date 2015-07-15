@@ -14,13 +14,6 @@
             <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
         <Canvas x:Name="CanvasHeader" HorizontalAlignment="Left" Height="90" VerticalAlignment="Top" Width="442" Background="#FFF1EDED">
-            <Label ToolTipService.ShowDuration="12000" Name="LabelShowToolip" Content="Shows tooltip">
-                <Label.ToolTip>
-                    <ToolTip>
-                        <TextBlock>Hello world!</TextBlock>
-                    </ToolTip>
-                </Label.ToolTip>
-            </Label>
             <Canvas x:Name="CanvasInformation" Height="49" Canvas.Left="10" Canvas.Top="25" Width="260" Background="White">
                 <Label x:Name="LabelRunToday" Content="Maps run today:" ToolTip="Maps run in the last 24 hours"/>
                 <Label x:Name="LabelMapsRunValue" Content="0" Canvas.Left="{Binding ActualWidth, ElementName=LabelRunToday}"/>
@@ -58,7 +51,7 @@
                     <DataGridTextColumn Binding="{Binding id}" ClipboardContentBinding="{x:Null}" Header="id" x:Name="idColumn" Width="150*" Visibility="Hidden"/>
                     <DataGridTextColumn Binding="{Binding mysql_id}" ClipboardContentBinding="{x:Null}" Header="mysqlid" Width="150*" Visibility="Hidden"/>
                     <DataGridTextColumn Binding="{Binding name}" ClipboardContentBinding="{x:Null}" Header="Map" Width="150*"/>
-                    <DataGridTextColumn Binding="{Binding gained}" ClipboardContentBinding="{x:Null}" Header="Gained" Width="50"/>
+                    <DataGridTextColumn Binding="{Binding gained}" ClipboardContentBinding="{x:Null}" Header="Gained %" Width="57"/>
                     <DataGridTextColumn Binding="{Binding level}" ClipboardContentBinding="{x:Null}" Header="Level" Width="36"/>
                     <DataGridTextColumn Binding="{Binding quantity}" ClipboardContentBinding="{x:Null}" Header="Quantity"/>
                     <DataGridTextColumn Binding="{Binding quality}" ClipboardContentBinding="{x:Null}" Header="Quality"/>

@@ -16,6 +16,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Cartogram.JSON;
 using Cartogram.Properties;
 using Tesseract;
 using Brushes = System.Windows.Media.Brushes;
@@ -56,6 +57,7 @@ namespace Cartogram
 
         private readonly DispatcherTimer _mapTimer;
         internal Map CurrentMap;
+        internal dynamic LeagueObject;
         private int _timerTicks;
         private string _state;
         private IntPtr _handle;
@@ -79,11 +81,10 @@ namespace Cartogram
             };
             
             _mapTimer.Tick += _mapTimer_Elapsed;
-            
+            LeagueObject = JsonHandler.ParseJsonObject("http://api.exiletools.com/ladder?listleagues=1");
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
             _state = "WAITING";
             ExtendedStatusStrip.AddStatus("Welcome back, Exile!");
-            LabelShowToolip.Content = "Hello World!";
         }
 
         public static MainWindow GetSingleton()
@@ -109,6 +110,9 @@ namespace Cartogram
             UnregisterHotkeys();
         }
 
+        /// <summary>
+        /// Registers the hotkeys globally. Unregisters any already registered hotkeys first.
+        /// </summary>
         internal void RegisterHotkeys()
         {
             try
@@ -144,6 +148,9 @@ namespace Cartogram
             CanvasCurrentMap.Visibility = Visibility.Hidden;
         }
 
+        /// <summary>
+        /// Populates the experience breakpoints from the CSV file into the local database.
+        /// </summary>
         private void PopulateExperience()
         {
             var lines = File.ReadAllLines(Directory.GetCurrentDirectory() + @"\Resources\Experience.csv").Select(a => a.Split(','));
@@ -454,7 +461,7 @@ namespace Cartogram
         {
             var rowStr = ((DataRowView) GridMaps.SelectedItem)?.Row[0];
             int rowId;
-            if (!int.TryParse(rowStr.ToString(), out rowId)) return;
+            if (!int.TryParse(rowStr?.ToString(), out rowId)) return;
             var selectedMap = Sqlite.GetMap(rowId);
             var mapDetails = new Details(selectedMap);
             mapDetails.ShowDialog();
@@ -476,7 +483,7 @@ namespace Cartogram
         private void button_Click(object sender, RoutedEventArgs e)
         {
             var newMap = new NewMap();
-            newMap.ShowDialog();
+            newMap.Show();
         }
     }
 

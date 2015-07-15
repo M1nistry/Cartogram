@@ -41,7 +41,8 @@ namespace Cartogram.SQL
                     using (var cmd = new SQLiteCommand(connection))
                     {
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `maps` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `mysql_id` INTEGER DEFAULT 0, `rarity` TEXT, `level` INTEGER, `name` TEXT, 
-                                            `quality` INTEGER, `quantity` INTEGER, `started_at` DATETIME, `finished_at` DATETIME, `notes` TEXT, `league` TEXT, `character` TEXT);";
+                                            `quality` INTEGER, `quantity` INTEGER, `started_at` DATETIME, `finished_at` DATETIME, `notes` TEXT, `league` TEXT, `character` TEXT, `unidentified` INTEGER NOT NULL,
+                                            `ownmap` INTEGER NOT NULL, `item_rarity` INTEGER NOT NULL);";
                         cmd.ExecuteNonQuery();
 
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `affixes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `map_id` INTEGER, `affix` TEXT);";
@@ -88,8 +89,8 @@ namespace Cartogram.SQL
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
-                const string addQuery = @"INSERT INTO `maps` (`mysql_id`, `rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`) VALUES 
-                                                             (@mysqlid, @rarity, @level, @name, @quality, @quantity, @startedat, @league, @character)";
+                const string addQuery = @"INSERT INTO `maps` (`mysql_id`, `rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`, `unidentified`, `ownmap`) VALUES 
+                                                             (@mysqlid, @rarity, @level, @name, @quality, @quantity, @startedat, @league, @character, @unidentified, @ownmap)";
                 using (var cmd = new SQLiteCommand(addQuery, connection))
                 {
                     cmd.Parameters.AddWithValue("mysqlid", newMap.SqlId);
@@ -101,6 +102,8 @@ namespace Cartogram.SQL
                     cmd.Parameters.AddWithValue("startedat", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     cmd.Parameters.AddWithValue("league", newMap.League);
                     cmd.Parameters.AddWithValue("character", newMap.Character);
+                    cmd.Parameters.AddWithValue("unidentified", newMap.Unidentified);
+                    cmd.Parameters.AddWithValue("ownmap", newMap.OwnMap);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -175,7 +178,9 @@ namespace Cartogram.SQL
                                 ExpBefore = expBefore,
                                 Affixes = affixes,
                                 League = reader["league"].ToString(),
-                                Character = reader["character"].ToString()
+                                Character = reader["character"].ToString(),
+                                Unidentified = reader["unidentified"].ToString() == "1",
+                                OwnMap = reader["ownmap"].ToString() == "1"
                             };
                         }
                     }
@@ -213,7 +218,7 @@ namespace Cartogram.SQL
                                 var mapId = int.Parse(reader["id"].ToString());
                                 var sqlId = int.Parse(reader["mysql_id"].ToString());
                                 dtMaps.Rows.Add(mapId, sqlId, int.Parse(reader["level"].ToString()),
-                                    reader["name"].ToString(), String.Format("{0:N2}", ExpGained(mapId)),
+                                    reader["name"].ToString(), $"{ExpGained(mapId):N2}",
                                     reader["rarity"].ToString(), int.Parse(reader["quality"].ToString()),
                                     int.Parse(reader["quantity"].ToString()), MapDrops(mapId, "<"),
                                     MapDrops(mapId, "="), MapDrops(mapId, ">"));

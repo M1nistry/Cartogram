@@ -8,23 +8,6 @@
 
     <Grid Background="#FFF1EDED">
         <Canvas>
-            <ComboBox x:Name="ComboLeague" SelectionChanged="ComboLeague_SelectionChanged" Height="23" Canvas.Left="57" Canvas.Top="14" Width="155"/>
-            <Label x:Name="LabelName" Content="Name:" ToolTip="Name of the character this map is being run on. This is used to be able to later breakdown maps run by a specified character and see their progression of experience. " Margin="8,40,375,36" Height="25"/>
-            <ComboBox x:Name="ComboBoxName" ToolTip="Enter your characters name here. Right click the drop down arrow to remove the currently selected name." LostFocus="TextBoxName_LostFocus" ItemsSource="{Binding}" IsEditable="True" Height="24" Canvas.Left="57" Canvas.Top="41" Width="155">
-                <ComboBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Remove" Click="NameRemove_Click"/>
-                    </ContextMenu>
-                </ComboBox.ContextMenu>
-            </ComboBox>
-            <Label x:Name="ZanaLevel" Content="Zana Level: " Margin="219,9,142,64" Height="25"/>
-            <Slider x:Name="ZanaValue" Maximum="8" ValueChanged="ZanaValue_ValueChanged" SmallChange="1000" Height="20" Canvas.Left="296" Canvas.Top="14" Width="100"/>
-            <Label x:Name="ZanaInt" Content="0" Height="25" Canvas.Left="396" Canvas.Top="9"/>
-            <Label x:Name="LabelLeague" Content="League:" Margin="0,12,380,64" Height="26" />
-            <Button x:Name="ButtonStart" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="ButtonStart_Click" Canvas.Left="225" Canvas.Top="75"/>
-            <Button x:Name="ButtonCancel" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="ButtonCancel_Click" Canvas.Left="337" Canvas.Top="75"/>
-            <RadioButton x:Name="radioButtonOwn" Content="Own Map" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="True" Canvas.Left="229" Canvas.Top="45"/>
-            <RadioButton x:Name="radioButtonParty" Content="Party Members" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="305" Canvas.Top="46"/>
             <Expander x:Name="MapInformation" 
                       Template="{StaticResource RevealExpanderTemp}"
                       OverridesDefaultStyle="True"
@@ -67,6 +50,23 @@
                     </Canvas>
                 </Grid>
             </Expander>
+            <ComboBox x:Name="ComboLeague" SelectionChanged="ComboLeague_SelectionChanged" Height="23" Canvas.Left="57" Canvas.Top="14" Width="155"/>
+            <Label x:Name="LabelName" Content="Name:" ToolTip="Name of the character this map is being run on. This is used to be able to later breakdown maps run by a specified character and see their progression of experience. " Margin="8,40,375,36" Height="25"/>
+            <ComboBox x:Name="ComboBoxName" ToolTip="Enter your characters name here. Right click the drop down arrow to remove the currently selected name." LostFocus="TextBoxName_LostFocus" ItemsSource="{Binding}" IsEditable="True" Height="24" Canvas.Left="57" Canvas.Top="41" Width="155">
+                <ComboBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Remove" Click="NameRemove_Click"/>
+                    </ContextMenu>
+                </ComboBox.ContextMenu>
+            </ComboBox>
+            <Label x:Name="ZanaLevel" Content="Zana Level: " Margin="219,9,142,64" Height="25"/>
+            <Slider x:Name="ZanaValue" Maximum="8" ValueChanged="ZanaValue_ValueChanged" SmallChange="1000" Height="20" Canvas.Left="296" Canvas.Top="14" Width="100"/>
+            <Label x:Name="ZanaInt" Content="0" Height="25" Canvas.Left="396" Canvas.Top="9"/>
+            <Label x:Name="LabelLeague" Content="League:" Margin="0,12,380,64" Height="26" />
+            <Button x:Name="ButtonStart" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="ButtonStart_Click" Canvas.Left="225" Canvas.Top="75"/>
+            <Button x:Name="ButtonCancel" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="ButtonCancel_Click" Canvas.Left="337" Canvas.Top="75"/>
+            <RadioButton x:Name="radioButtonOwn" Content="Own Map" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="True" Canvas.Left="229" Canvas.Top="45"/>
+            <RadioButton x:Name="radioButtonParty" Content="Party Members" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="305" Canvas.Top="46"/>
         </Canvas>
     </Grid>
 </Window>

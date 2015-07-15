@@ -63,16 +63,18 @@ namespace Cartogram
 
         protected override void OnClosed(EventArgs e)
         {
-            _source.RemoveHook(WndProc);
-            _source = null;
+            if (_source != null)
+            {
+                _source.RemoveHook(WndProc);
+                _source = null;
+            }
             base.OnClosed(e);
         }
 
         private void PopulateLeagues()
         {
-            var jObject = JsonHandler.ParseJsonObject("http://api.exiletools.com/ladder?listleagues=1");
             var leagueList = new List<League>();
-            foreach (var entry in jObject)
+            foreach (var entry in _main.LeagueObject)
             {
                 dynamic values = entry.Value;
                 var league = new League
@@ -147,13 +149,14 @@ namespace Cartogram
             //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
             //}
             //_main.CurrentMap.SqlId = _mySqlId;
-            if (_main.CurrentMap == null) return;
-            _main.CurrentMap.Quantity += Settings.Default.ZanaQuantity;
-            _main.CurrentMap.OwnMap = radioButtonOwn.IsChecked == true;
-            _main.CurrentMap.League = ComboLeague.Text;
-            _main.CurrentMap.Character = ComboBoxName.Text;
-            _main.CurrentMap.Id = Sqlite.AddMap(_main.CurrentMap);
-            if (_main.CurrentMap.Id > 0)
+
+            if (CurrentMap == null) return;
+            CurrentMap.Quantity += Settings.Default.ZanaQuantity;
+            CurrentMap.OwnMap = radioButtonOwn.IsChecked == true;
+            CurrentMap.League = ComboLeague.Text;
+            CurrentMap.Character = ComboBoxName.Text;
+            CurrentMap.Id = Sqlite.AddMap(_main.CurrentMap);
+            if (CurrentMap.Id > 0)
             {
                 
             }
@@ -196,6 +199,7 @@ namespace Cartogram
         private void PopulateMapInformation()
         {
             var mapInformation = Sqlite.MapInformation(CurrentMap.Name);
+            if (mapInformation == null) return;
             LabelMapValue.Text = mapInformation.Zone;
             LabelBossValue.Text = mapInformation.Boss;
             LabelDescription.Text = mapInformation.BossDetails;

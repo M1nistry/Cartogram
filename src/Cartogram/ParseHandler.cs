@@ -38,18 +38,36 @@ namespace Cartogram
                     Name = MapName(clipboardContents[1]),
                     Affixes = GetAffixes(clipboardContents),
                 };
-                if (clipboardValue.Contains("Item Quantity:"))
+
+                foreach (var row in clipboardContents)
                 {
-                    int quantity;
-                    if (int.TryParse(clipboardContents[4].Replace("Item Quantity: +", "").Replace("% (augmented)", ""), out quantity))
-                        newMap.Quantity = quantity;
+                    if (row.Contains("Item Quantity:"))
+                    {
+                        int quantity;
+                        if (int.TryParse(row.Replace("Item Quantity: +", "").Replace("% (augmented)", ""), out quantity))
+                            newMap.Quantity = quantity;
+                    }
+                    if (row.Contains("Quality:"))
+                    {
+                        int quality;
+                        if (int.TryParse(row.Replace("Quality: +", "").Replace("% (augmented)", ""), out quality))
+                            newMap.Quality = quality;
+                    }
+                    if (row.Contains("Monster Pack Size:"))
+                    {
+                        int packSize;
+                        if (int.TryParse(row.Replace("Monster Pack Size: +", "").Replace("% (augmented)", ""), out packSize))
+                            newMap.PackSize = packSize;
+                    }
+                    if (row.Contains("Item Rarity:"))
+                    {
+                        int itemRarity;
+                        if (int.TryParse(row.Replace("Item Rarity: +", "").Replace("% (augmented)", ""), out itemRarity))
+                            newMap.ItemRarity = itemRarity;
+                    }
                 }
-                if (clipboardValue.Contains("Quality:"))
-                {
-                    int quality;
-                    if (int.TryParse(clipboardContents[5].Replace("Quality: +", "").Replace("% (augmented)", ""), out quality))
-                        newMap.Quality = quality;
-                }
+                
+                
                 return newMap;
             }
 
@@ -66,17 +84,32 @@ namespace Cartogram
                 };
                 newMap.Name = newMap.Rarity == "Rare" ? MapName(clipboardContents[2 - i]) : MapName(clipboardContents[1]);
 
-                if (clipboardValue.Contains("Item Quantity:"))
+                foreach (var row in clipboardContents)
                 {
-                    int quantity;
-                    if (int.TryParse(clipboardContents[5].Replace("Item Quantity: +", "").Replace("% (augmented)", ""), out quantity))
-                        newMap.Quantity = quantity;
-                }
-                if (clipboardValue.Contains("Quality:"))
-                {
-                    int quality;
-                    if (int.TryParse(clipboardContents[6].Replace("Quality: +", "").Replace("% (augmented)", ""), out quality))
-                        newMap.Quality = quality;
+                    if (row.Contains("Item Quantity:"))
+                    {
+                        int quantity;
+                        if (int.TryParse(row.Replace("Item Quantity: +", "").Replace("% (augmented)", ""), out quantity))
+                            newMap.Quantity = quantity;
+                    }
+                    if (row.Contains("Quality:"))
+                    {
+                        int quality;
+                        if (int.TryParse(row.Replace("Quality: +", "").Replace("% (augmented)", ""), out quality))
+                            newMap.Quality = quality;
+                    }
+                    if (row.Contains("Monster Pack Size:"))
+                    {
+                        int packSize;
+                        if (int.TryParse(row.Replace("Monster Pack Size: +", "").Replace("% (augmented)", ""), out packSize))
+                            newMap.PackSize = packSize;
+                    }
+                    if (row.Contains("Item Rarity:"))
+                    {
+                        int itemRarity;
+                        if (int.TryParse(row.Replace("Item Rarity: +", "").Replace("% (augmented)", ""), out itemRarity))
+                            newMap.ItemRarity = itemRarity;
+                    }
                 }
                 return newMap;
             }
