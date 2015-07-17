@@ -152,11 +152,11 @@ namespace Cartogram
             //_main.CurrentMap.SqlId = _mySqlId;
 
             if (CurrentMap == null) return;
-            CurrentMap.Quantity += Settings.Default.ZanaQuantity;
+            CurrentMap.Quantity = CurrentMap.Quantity + Settings.Default.ZanaQuantity;
             CurrentMap.OwnMap = radioButtonOwn.IsChecked == true;
             CurrentMap.League = ComboLeague.Text;
             CurrentMap.Character = ComboBoxName.Text;
-            CurrentMap.Id = Sqlite.AddMap(_main.CurrentMap);
+            CurrentMap.Id = Sqlite.AddMap(CurrentMap);
             if (CurrentMap.Id > 0)
             {
                 

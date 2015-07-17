@@ -21,6 +21,7 @@ namespace Cartogram.SQL
                 Version = 3,
             };
             Connection = new SQLiteConnection(constring.ToString());
+            Connection.ParseViaFramework = true;
             if (SetupDb())
             {
 
@@ -74,6 +75,7 @@ namespace Cartogram.SQL
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `map_information` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT, `unique` TINYINT, 
                                             `zone` TEXT, `boss` TEXT, `boss_information` TEXT, `description` TEXT);";
                         cmd.ExecuteNonQuery();
+
                         return true;
                     }
                 }
@@ -89,21 +91,22 @@ namespace Cartogram.SQL
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
-                const string addQuery = @"INSERT INTO `maps` (`mysql_id`, `rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`, `unidentified`, `ownmap`) VALUES 
-                                                             (@mysqlid, @rarity, @level, @name, @quality, @quantity, @startedat, @league, @character, @unidentified, @ownmap)";
+                const string addQuery = @"INSERT INTO `maps` (`rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`, `unidentified`, `ownmap`, `item_rarity`) VALUES 
+                                                             (@rarity, @level, @name, @quality, @quantity, @startedat, @league, @character, @unidentified, @ownmap, @itemrarity)";
                 using (var cmd = new SQLiteCommand(addQuery, connection))
                 {
-                    cmd.Parameters.AddWithValue("mysqlid", newMap.SqlId);
+                    //cmd.Parameters.AddWithValue("mysqlid", newMap.SqlId);
                     cmd.Parameters.AddWithValue("rarity", newMap.Rarity);
                     cmd.Parameters.AddWithValue("level", newMap.Level);
                     cmd.Parameters.AddWithValue("name", newMap.Name);
                     cmd.Parameters.AddWithValue("quality", newMap.Quality);
-                    cmd.Parameters.AddWithValue("quantity", newMap.Quantity + Properties.Settings.Default.ZanaQuantity);
+                    cmd.Parameters.AddWithValue("quantity", newMap.Quantity);
                     cmd.Parameters.AddWithValue("startedat", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     cmd.Parameters.AddWithValue("league", newMap.League);
                     cmd.Parameters.AddWithValue("character", newMap.Character);
                     cmd.Parameters.AddWithValue("unidentified", newMap.Unidentified);
                     cmd.Parameters.AddWithValue("ownmap", newMap.OwnMap);
+                    cmd.Parameters.AddWithValue("itemrarity", newMap.ItemRarity);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -119,8 +122,7 @@ namespace Cartogram.SQL
                         cmd.ExecuteNonQuery();
                     }
                 }
-                const string addExperience =
-                    @"INSERT INTO `map_experience` (`map_id`, `exp_before`, `level_before`, `percent_before`) VALUES (@id, @expb, @levelb, @percentb);";
+                const string addExperience = @"INSERT INTO `map_experience` (`map_id`, `exp_before`, `level_before`, `percent_before`) VALUES (@id, @expb, @levelb, @percentb);";
                 using (var cmd = new SQLiteCommand(addExperience, connection))
                 {
                     cmd.Parameters.AddWithValue("@id", mapId);
