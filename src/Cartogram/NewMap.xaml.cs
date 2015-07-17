@@ -141,7 +141,7 @@ namespace Cartogram
             if (ComboBoxName.Text == string.Empty) MessageBox.Show(@"Please enter your characters name", @"No character selected");
             int zanaQuantity;
             Settings.Default.ZanaQuantity = int.TryParse(ZanaInt.Content.ToString(), out zanaQuantity) ? zanaQuantity : 0;
-
+            Settings.Default.SelectedLeague = ComboLeague.Text;
 
             //if (publicOpt)
             //{
@@ -161,6 +161,7 @@ namespace Cartogram
                 CurrentMap.StartAt = DateTime.Now;
                 _main.CurrentMap = CurrentMap;
                 Close();
+                Clipboard.SetText("");
             }
         }
 
