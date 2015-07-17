@@ -26,8 +26,9 @@
                 <Label x:Name="TimerValue" Canvas.Top="20" Canvas.Left="{Binding ActualWidth, ElementName=LabelDuration}" Content="00:00:00"/>
                 <Border x:Name="CurrentMapBorder" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" BorderThickness="1" Height="50" Width="260" CornerRadius="1"/>
             </Canvas>
-            <Menu x:Name="MainMenu" Height="22" Width="442" Background="#FFF1EDED" BorderThickness="0,2,0,0" PreviewMouseDown="MainMenu_PreviewMouseDown">
+            <Menu x:Name="MainMenu" Height="22" Width="442" Background="#FFF1EDED" BorderThickness="0,2,0,0">
                 <MenuItem Header="File">
+                    <MenuItem Header="New Map" Click="NewMap_OnClick"/>
                     <MenuItem Header="Exit"/>
                 </MenuItem>
                 <MenuItem Header="Tools">
@@ -38,7 +39,6 @@
                     <MenuItem Header="About"/>
                 </MenuItem>
             </Menu>
-            <Button x:Name="button" Content="Button" Canvas.Left="304" Canvas.Top="28" Width="75" Click="button_Click"/>
         </Canvas>
         <DockPanel Grid.Row="1" Background="#FFF1EDED" >
             <DataGrid x:Name="GridMaps" ItemsSource="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Width="422" AutoGenerateColumns="False" MinWidth="422" VerticalScrollBarVisibility="Hidden" Background="White" FontSize="11" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" SelectionChanged="GridMaps_SelectionChanged" IsReadOnly="True" ColumnHeaderHeight="22" AlternatingRowBackground="#BFE3E3E3" RowHeight="17">

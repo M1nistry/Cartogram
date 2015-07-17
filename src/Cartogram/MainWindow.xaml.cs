@@ -84,6 +84,7 @@ namespace Cartogram
             LeagueObject = JsonHandler.ParseJsonObject("http://api.exiletools.com/ladder?listleagues=1");
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
             _state = "WAITING";
+            UpdateInformation();
             ExtendedStatusStrip.AddStatus("Welcome back, Exile!");
         }
 
@@ -217,37 +218,33 @@ namespace Cartogram
                         var clipboard = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
                         switch (_state)
                         {
-                            case ("WAITING"):
-                                CurrentMap = ParseHandler.ParseClipboard();
-                                if (CurrentMap == null) break;
-                                CurrentMap.ExpBefore = ExpValue();
-                                var newMap = new NewMap();
-                                newMap.ShowDialog();
-                                if (newMap.Cancelled) return IntPtr.Zero;
-                                //CurrentMap.League = newMap.League;
-                                //CurrentMap.Character = newMap.Character;
-                                //CurrentMap.OwnMap = newMap.OwnMap;
-                                //if (publicOpt)
-                                //{
-                                //    _mySqlId = _mySql.AddMap(CurrentMap);
-                                //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
-                                //}
-                                //CurrentMap.SqlId = _mySqlId;
-                                CurrentMap.Id = Sqlite.AddMap(CurrentMap);
-                                if (CurrentMap.Id > 0)
-                                {
-                                    CanvasInformation.Visibility = Visibility.Hidden;
-                                    CanvasCurrentMap.Visibility = Visibility.Visible;
-                                    LabelMapValue.Content = CurrentMap.Name;
-                                    _timerTicks = 0;
-                                    _mapTimer.Start();
-
-                                    CurrentMapBorder.BorderBrush = Brushes.Red;
-                                    ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
-                                    RefreshGrids();
-                                    _state = "DROPS";
-                                }
-                                break;
+                            //case ("WAITING"):
+                            //    CurrentMap = ParseHandler.ParseClipboard();
+                            //    if (CurrentMap == null) break;
+                            //    CurrentMap.ExpBefore = ExpValue();
+                            //    var newMap = new NewMap();
+                            //    newMap.ShowDialog();
+                            //    if (newMap.Cancelled) return IntPtr.Zero;
+                            //    //if (publicOpt)
+                            //    //{
+                            //    //    _mySqlId = _mySql.AddMap(CurrentMap);
+                            //    //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
+                            //    //}
+                            //    //CurrentMap.SqlId = _mySqlId;
+                            //    if (CurrentMap.Id > 0)
+                            //    {
+                            //        CanvasInformation.Visibility = Visibility.Hidden;
+                            //        CanvasCurrentMap.Visibility = Visibility.Visible;
+                            //        LabelMapValue.Content = CurrentMap.Name;
+                            //        _timerTicks = 0;
+                            //        _mapTimer.Start();
+                            //        CurrentMapBorder.BorderBrush = Brushes.Red;
+                            //        ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
+                            //        RefreshGrids();
+                            //        GridMaps.SelectedIndex = 0;
+                            //        _state = "DROPS";
+                            //    }
+                            //    break;
 
                             case ("DROPS"):
                                 if (CurrentMap.Id <= 0) break;
@@ -272,6 +269,8 @@ namespace Cartogram
                                         Sqlite.AddUnique(CurrentMap.Id, parsedUnique);
                                         //if (publicOpt && _mySqlId > 0) Sqlite.AddUnique(_mySqlId, parsedUnique);
                                     }
+                                    RefreshGrids();
+                                    GridMaps.SelectedIndex = 0;
                                 }
                                 catch (Exception)
                                 {
@@ -279,6 +278,7 @@ namespace Cartogram
                                 }
                                 System.Windows.Clipboard.SetText("");
                                 break;
+
                             case ("ZANA"):
                                 if (CurrentMap.Id <= 0) break;
                                 Sqlite.AddDrop(ParseHandler.ParseClipboard(), CurrentMap.Id, 1);
@@ -308,14 +308,16 @@ namespace Cartogram
                             {
                                 _mapTimer.Stop();
                                 CurrentMapBorder.BorderBrush = Brushes.DimGray;
-                                var expAfter = ExpValue();
+                                Experience expAfter = null;//ExpValue();
                                 Sqlite.FinishMap(CurrentMap.Id, expAfter);
+                                ExtendedStatusStrip.AddStatus($"Finished {CurrentMap.Name}, Gained {"0.0%"} experience.");
                                 //if (publicOpt && _mySqlId > 0) _mySql.FinishMap(_mySqlId, expAfter);
+                                CurrentMap = null;
                                 _state = "WAITING";
                                 UpdateInformation();
-                                var expDiff = expAfter.CurrentExperience - CurrentMap.ExpBefore.CurrentExperience;
-                                var expGoal = Sqlite.ExperienceGoal(CurrentMap.ExpBefore.Level);
-                                var percentDiff = (float)expDiff / expGoal;
+                                //var expDiff = expAfter.CurrentExperience - CurrentMap.ExpBefore.CurrentExperience;
+                                //var expGoal = Sqlite.ExperienceGoal(CurrentMap.ExpBefore.Level);
+                                //var percentDiff = (float)expDiff / expGoal;
                                 //ExtendedStatusStrip.AddStatus(string.Format("Finished {0} map, gained {1} of experience", CurrentMap.Name, percentDiff));
                             }
                             break;
@@ -475,15 +477,28 @@ namespace Cartogram
             RefreshGrids();
         }
 
-
-        private void MainMenu_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-        }
-
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void NewMap_OnClick(object sender, RoutedEventArgs e)
         {
             var newMap = new NewMap();
-            newMap.Show();
+            newMap.ShowDialog();
+            OnSourceInitialized(e);
+            if (newMap.Cancelled || CurrentMap == null || CurrentMap.Id <= 0) return;
+            //if (publicOpt)
+            //{
+            //    _mySqlId = _mySql.AddMap(CurrentMap);
+            //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
+            //}
+            //CurrentMap.SqlId = _mySqlId;
+            CanvasInformation.Visibility = Visibility.Hidden;
+            CanvasCurrentMap.Visibility = Visibility.Visible;
+            LabelMapValue.Content = CurrentMap.Name;
+            _timerTicks = 0;
+            _mapTimer.Start();
+            CurrentMapBorder.BorderBrush = Brushes.Red;
+            ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
+            RefreshGrids();
+            GridMaps.SelectedIndex = 0;
+            _state = "DROPS";
         }
     }
 

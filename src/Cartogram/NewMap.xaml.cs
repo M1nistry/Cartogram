@@ -50,7 +50,6 @@ namespace Cartogram
             ComboBoxName.Text = Settings.Default.CharacterName;
             ZanaInt.Content = Settings.Default.ZanaQuantity.ToString();
             ZanaValue.Value = Settings.Default.ZanaQuantity;
-            Console.WriteLine("Hello World");
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -159,9 +158,10 @@ namespace Cartogram
             CurrentMap.Id = Sqlite.AddMap(CurrentMap);
             if (CurrentMap.Id > 0)
             {
-                
+                CurrentMap.StartAt = DateTime.Now;
+                _main.CurrentMap = CurrentMap;
+                Close();
             }
-            Close();
         }
 
         private void ButtonCancel_Click(object sender, RoutedEventArgs e)

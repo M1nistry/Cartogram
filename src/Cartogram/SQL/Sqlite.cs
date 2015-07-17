@@ -122,15 +122,15 @@ namespace Cartogram.SQL
                         cmd.ExecuteNonQuery();
                     }
                 }
-                const string addExperience = @"INSERT INTO `map_experience` (`map_id`, `exp_before`, `level_before`, `percent_before`) VALUES (@id, @expb, @levelb, @percentb);";
-                using (var cmd = new SQLiteCommand(addExperience, connection))
-                {
-                    cmd.Parameters.AddWithValue("@id", mapId);
-                    cmd.Parameters.AddWithValue("@expb", newMap.ExpBefore.CurrentExperience);
-                    cmd.Parameters.AddWithValue("@levelb", newMap.ExpBefore.Level);
-                    cmd.Parameters.AddWithValue("@percentb", newMap.ExpBefore.Percentage);
-                    cmd.ExecuteNonQuery();
-                }
+                //const string addExperience = @"INSERT INTO `map_experience` (`map_id`, `exp_before`, `level_before`, `percent_before`) VALUES (@id, @expb, @levelb, @percentb);";
+                //using (var cmd = new SQLiteCommand(addExperience, connection))
+                //{
+                //    cmd.Parameters.AddWithValue("@id", mapId);
+                //    cmd.Parameters.AddWithValue("@expb", newMap.ExpBefore.CurrentExperience);
+                //    cmd.Parameters.AddWithValue("@levelb", newMap.ExpBefore.Level);
+                //    cmd.Parameters.AddWithValue("@percentb", newMap.ExpBefore.Percentage);
+                //    cmd.ExecuteNonQuery();
+                //}
 
                 return mapId;
             }
@@ -446,15 +446,15 @@ namespace Cartogram.SQL
                     cmd.Parameters.AddWithValue("finish", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     cmd.ExecuteNonQuery();
                 }
-                const string updateExperience = @"UPDATE map_experience SET exp_after=@expa, level_after=@levela, percent_after=@percenta WHERE map_id=@id;";
-                using (var cmd = new SQLiteCommand(updateExperience, connection))
-                {
-                    cmd.Parameters.AddWithValue("@expa", exp.CurrentExperience);
-                    cmd.Parameters.AddWithValue("@levela", exp.Level);
-                    cmd.Parameters.AddWithValue("@percenta", exp.Percentage);
-                    cmd.Parameters.AddWithValue("@id", id);
-                    cmd.ExecuteNonQuery();
-                }
+                //const string updateExperience = @"UPDATE map_experience SET exp_after=@expa, level_after=@levela, percent_after=@percenta WHERE map_id=@id;";
+                //using (var cmd = new SQLiteCommand(updateExperience, connection))
+                //{
+                //    cmd.Parameters.AddWithValue("@expa", exp.CurrentExperience);
+                //    cmd.Parameters.AddWithValue("@levela", exp.Level);
+                //    cmd.Parameters.AddWithValue("@percenta", exp.Percentage);
+                //    cmd.Parameters.AddWithValue("@id", id);
+                //    cmd.ExecuteNonQuery();
+                //}
             }
         }
 
