@@ -161,7 +161,16 @@ namespace Cartogram
                 CurrentMap.StartAt = DateTime.Now;
                 _main.CurrentMap = CurrentMap;
                 Close();
-                Clipboard.SetText("");
+                for (var i = 0; i < 10; i++)
+                {
+                    try
+                    {
+                        Clipboard.Clear();
+                        return;
+                    }
+                    catch { }
+                    System.Threading.Thread.Sleep(100);
+                }
             }
         }
 

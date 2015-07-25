@@ -122,6 +122,7 @@ namespace Cartogram
                 RegisterHotKey(_handle, 0, 0, Convert.ToUInt32(Settings.Default.mapHotkey));
                 RegisterHotKey(_handle, 1, 0, Convert.ToUInt32(Settings.Default.zanaHotkey));
                 RegisterHotKey(_handle, 2, 0, Convert.ToUInt32(Settings.Default.cartoHotkey));
+                RegisterHotKey(_handle, 3, 0, 121);
             }
             catch (Exception Cuex)
             {
@@ -344,7 +345,28 @@ namespace Cartogram
                             ExtendedStatusStrip.AddStatus($"Cartographer found! press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} when drops recorded.");
                             _state = "CARTO";
                             break;
-
+                        case (3):
+                                var newMap = new NewMap();
+                                newMap.ShowDialog();
+                                OnSourceInitialized(new RoutedEventArgs());
+                                if (newMap.Cancelled || CurrentMap == null || CurrentMap.Id <= 0) break;
+                                //if (publicOpt)
+                                //{
+                                //    _mySqlId = _mySql.AddMap(CurrentMap);
+                                //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
+                                //}
+                                //CurrentMap.SqlId = _mySqlId;
+                                CanvasInformation.Visibility = Visibility.Hidden;
+                                CanvasCurrentMap.Visibility = Visibility.Visible;
+                                LabelMapValue.Content = CurrentMap.Name;
+                                _timerTicks = 0;
+                                _mapTimer.Start();
+                                CurrentMapBorder.BorderBrush = Brushes.Red;
+                                ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
+                                RefreshGrids();
+                                GridMaps.SelectedIndex = 0;
+                                _state = "DROPS";
+                            break;
                     }
                     break;
             }
@@ -465,6 +487,7 @@ namespace Cartogram
             int rowId;
             if (!int.TryParse(rowStr?.ToString(), out rowId)) return;
             var selectedMap = Sqlite.GetMap(rowId);
+            if (selectedMap == null) return;
             var mapDetails = new Details(selectedMap);
             mapDetails.ShowDialog();
         }

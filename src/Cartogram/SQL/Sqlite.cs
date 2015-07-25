@@ -141,7 +141,8 @@ namespace Cartogram.SQL
             var affixes = MapAffixes(mapId);
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
-                const string queryMap = @"SELECT * from `maps` m1 JOIN `map_experience` e1 ON m1.id=e1.map_id WHERE m1.id=@id";
+                //const string queryMap = @"SELECT * from `maps` m1 JOIN `map_experience` e1 ON m1.id=e1.map_id WHERE m1.id=@id";
+                const string queryMap = @"SELECT * from `maps` WHERE id=@id";
                 using (var cmd = new SQLiteCommand(queryMap, connection))
                 {
                     cmd.Parameters.AddWithValue("@id", mapId);
@@ -150,19 +151,19 @@ namespace Cartogram.SQL
                         while (reader.Read())
                         {
                             int id, level, quality, quantity, levelBefore, percentBefore, levelAfter, percentAfter;
-                            Int64 experienceBefore, experienceAfter;
-                            var expBefore = new Experience
-                            {
-                                CurrentExperience = Int64.TryParse(reader["exp_before"].ToString(), out experienceBefore) ? experienceBefore : 0,
-                                Level = int.TryParse(reader["level_before"].ToString(), out levelBefore) ? levelBefore : 0,
-                                Percentage = int.TryParse(reader["percent_before"].ToString(), out percentBefore) ? percentBefore : 0,
-                            };
-                            var expAfter = new Experience
-                            {
-                                CurrentExperience = Int64.TryParse(reader["exp_after"].ToString(), out experienceAfter) ? experienceAfter : 0,
-                                Level = int.TryParse(reader["level_after"].ToString(), out levelAfter) ? levelAfter : 0,
-                                Percentage = int.TryParse(reader["percent_after"].ToString(), out percentAfter) ? percentAfter : 0,
-                            };
+                            //Int64 experienceBefore, experienceAfter;
+                            //var expBefore = new Experience
+                            //{
+                            //    CurrentExperience = Int64.TryParse(reader["exp_before"].ToString(), out experienceBefore) ? experienceBefore : 0,
+                            //    Level = int.TryParse(reader["level_before"].ToString(), out levelBefore) ? levelBefore : 0,
+                            //    Percentage = int.TryParse(reader["percent_before"].ToString(), out percentBefore) ? percentBefore : 0,
+                            //};
+                            //var expAfter = new Experience
+                            //{
+                            //    CurrentExperience = Int64.TryParse(reader["exp_after"].ToString(), out experienceAfter) ? experienceAfter : 0,
+                            //    Level = int.TryParse(reader["level_after"].ToString(), out levelAfter) ? levelAfter : 0,
+                            //    Percentage = int.TryParse(reader["percent_after"].ToString(), out percentAfter) ? percentAfter : 0,
+                            //};
 
                             DateTime startAt, finishAt;
                             return new Map
@@ -176,8 +177,8 @@ namespace Cartogram.SQL
                                 StartAt = DateTime.TryParse(reader["started_at"].ToString(), out startAt) ? startAt : new DateTime(0001, 01, 01),
                                 FinishAt = DateTime.TryParse(reader["finished_at"].ToString(), out finishAt) ? finishAt : new DateTime(0001, 01, 01),
                                 Notes = reader["notes"].ToString(),
-                                ExpAfter = expAfter,
-                                ExpBefore = expBefore,
+                                //ExpAfter = expAfter,
+                                //ExpBefore = expBefore,
                                 Affixes = affixes,
                                 League = reader["league"].ToString(),
                                 Character = reader["character"].ToString(),

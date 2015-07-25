@@ -48,10 +48,10 @@ namespace Cartogram
             LabelDate.Text = MapDetails.StartAt.ToString(CultureInfo.CurrentCulture);
             var mapDuration = MapDetails.FinishAt - MapDetails.StartAt;
             LabelDuration.Text = $"Duration: {mapDuration}";
-            var expGained = MapDetails.ExpAfter.CurrentExperience - MapDetails.ExpBefore.CurrentExperience;
-            var expGoal = Sqlite.ExperienceGoal(MapDetails.ExpBefore.Level);
-            var percentGained = (float) expGained/expGoal;
-            LabelExperience.Text = $"Experience Gained: {expGained:#,##0} ({percentGained:P2})";
+            //var expGained = MapDetails.ExpAfter.CurrentExperience - MapDetails.ExpBefore.CurrentExperience;
+            //var expGoal = Sqlite.ExperienceGoal(MapDetails.ExpBefore.Level);
+            //var percentGained = (float) expGained/expGoal;
+            //LabelExperience.Text = $"Experience Gained: {expGained:#,##0} ({percentGained:P2})";
             if (MapDetails.Notes != string.Empty)
             {
                 TextBoxNotes.Text = MapDetails.Notes;
