@@ -5,4 +5,6 @@ Cartogram is a desktop application to track maps ran by both yourself and party 
 
 ---
 
+![Image](http://i.imgur.com/Yfh7LJn.png)
+
 Much to come.
