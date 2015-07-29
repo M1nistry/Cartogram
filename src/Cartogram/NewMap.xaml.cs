@@ -150,7 +150,7 @@ namespace Cartogram
             //}
             //_main.CurrentMap.SqlId = _mySqlId;
 
-            if (CurrentMap == null) return;
+            if (_main.CurrentMap != null || CurrentMap == null) return;
             CurrentMap.Quantity = CurrentMap.Quantity + Settings.Default.ZanaQuantity;
             CurrentMap.OwnMap = radioButtonOwn.IsChecked == true;
             CurrentMap.League = ComboLeague.Text;
@@ -161,15 +161,13 @@ namespace Cartogram
                 CurrentMap.StartAt = DateTime.Now;
                 _main.CurrentMap = CurrentMap;
                 Close();
-                for (var i = 0; i < 10; i++)
+                try
                 {
-                    try
-                    {
-                        Clipboard.Clear();
-                        return;
-                    }
-                    catch { }
-                    System.Threading.Thread.Sleep(100);
+                    Clipboard.Clear();
+                }
+                catch
+                {
+                    Clipboard.SetText(string.Empty);
                 }
             }
         }

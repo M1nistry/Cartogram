@@ -5,12 +5,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Name="Cartogram" x:Class="Cartogram.MainWindow"
-        Title="Cartogram" Height="500" Width="450" MaxWidth="450" MinWidth="450" Icon="Resources/24.ico">
+        Title="Cartogram" Height="520" Width="450" MaxWidth="450" MinWidth="450" Icon="Resources/24.ico">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="85"/>
             <RowDefinition Height="300*"/>
-            <RowDefinition Height="80"/>
+            <RowDefinition Height="100"/>
             <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
         <Canvas x:Name="CanvasHeader" HorizontalAlignment="Left" Height="90" VerticalAlignment="Top" Width="442" Background="#FFF1EDED">
@@ -68,7 +68,7 @@
             </DataGrid>
         </DockPanel>
         <Canvas Grid.Row="2" Background="#FFF1EDED">
-            <DataGrid x:Name="GridDrops" ItemsSource="{Binding}" Canvas.Left="9" Canvas.Top="10" Height="58" Width="422" Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" VerticalScrollBarVisibility="Disabled" FontSize="11" CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" HeadersVisibility="None" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" CanUserResizeRows="False" BorderBrush="#FF688CAF" RowHeight="20" IsReadOnly="True">
+            <DataGrid x:Name="GridDrops" ItemsSource="{Binding}" Canvas.Left="9" Canvas.Top="10" Height="80" Width="422" Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" VerticalScrollBarVisibility="Disabled" FontSize="11" CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" HeadersVisibility="None" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" CanUserResizeRows="False" BorderBrush="#FF688CAF" RowHeight="20" IsReadOnly="True">
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#FFFFFF"/>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black"/>
@@ -89,7 +89,7 @@
                     <DataGridTemplateColumn CanUserResize="False" Header="Value" Width="320">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding drops}">
+                                <TextBlock Text="{Binding drops}" Margin="5,2,0,0">
                                     <TextBlock.ToolTip>
                                         <TextBlock Text="{Binding maps}"/>
                                     </TextBlock.ToolTip>
@@ -97,7 +97,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-
+                
                 </DataGrid.Columns>
             </DataGrid>
         </Canvas>

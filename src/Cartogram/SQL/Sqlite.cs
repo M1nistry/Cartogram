@@ -59,6 +59,9 @@ namespace Cartogram.SQL
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `unique_drops` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `map_id` INTEGER, `name` TEXT)";
                         cmd.ExecuteNonQuery();
 
+                        cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `divination_drops` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `map_id` INTEGER, `name` TEXT, `count` INTEGER)";
+                        cmd.ExecuteNonQuery();
+
                         cmd.CommandText = @"CREATE UNIQUE INDEX  IF NOT EXISTS currency_idx ON currency_drops(map_id, name);";
                         cmd.ExecuteNonQuery();
 
@@ -253,6 +256,8 @@ namespace Cartogram.SQL
                     const string mapQuery = @"SELECT `level` FROM `map_drops` WHERE `map_id`=@mapid";
                     const string uniqueQuery = @"SELECT `name` FROM `unique_drops` WHERE `map_id`=@mapid";
                     const string currencyQuery = @"SELECT name, count FROM `currency_drops` WHERE `map_id`=@mapid";
+                    const string divinationQuery = @"SELECT name, count FROM `divination_drops` WHERE `map_id`=@mapid;";
+
                     using (var cmd = new SQLiteCommand(connection))
                     {
                         cmd.CommandText = mapQuery;
@@ -292,6 +297,18 @@ namespace Cartogram.SQL
                             }
                             if (drops.Length > 2) drops = drops.Remove(drops.Length - 2, 2);
                             dtDrops.Rows.Add("Currency", drops);
+                        }
+
+                        cmd.CommandText = divinationQuery;
+                        drops = "";
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                drops += reader["name"] + " x" + reader["count"] + ", ";
+                            }
+                            if (drops.Length > 2) drops = drops.Remove(drops.Length - 2, 2);
+                            dtDrops.Rows.Add("Divinations", drops);
                         }
                     }
                     return dtDrops;

@@ -7,23 +7,26 @@
     <Grid>
         <Border BorderBrush="Black" BorderThickness="1"/>
         <Canvas x:Name="CanvasSettings" Background="#FFF1EDED">
-            <Grid x:Name="GridHotkeys" Height="75" Canvas.Left="11" Canvas.Top="9" Width="220">
+            <Grid x:Name="GridHotkeys" Height="100" Canvas.Left="11" Canvas.Top="9" Width="220">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="20"></RowDefinition>
-                    <RowDefinition Height="20"></RowDefinition>
-                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
+                    <RowDefinition Height="25"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="180"/>
                     <ColumnDefinition Width="40"/>
                 </Grid.ColumnDefinitions>
 
-                <Label Grid.Row="0" Grid.Column="0" Content="Finish Map" Height="25"/>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Finish Map" Height="25" Margin="3,3"/>
                 <Button x:Name="ButtonMap" Grid.Column="1" Grid.Row="0" Content="" Margin="1,1,1,1" Click="ButtonHotkey_Click" BorderBrush="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" PreviewKeyDown="ButtonHotkey_PreviewKeyDown" LostFocus="ButtonHotkey_Click"/>
-                <Label Grid.Row="1" Grid.Column="0" Content="Toggle Zana" Height="28"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Toggle Zana" Height="28" Margin="3,3"/>
                 <Button x:Name="ButtonZana" Grid.Column="1" Grid.Row="1" Content="" Margin="1,1,1,1" BorderBrush="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" PreviewKeyDown="ButtonHotkey_PreviewKeyDown" Click="ButtonHotkey_Click" LostFocus="ButtonHotkey_Click"/>
-                <Label Grid.Row="2" Grid.Column="0" Content="Toggle Cartographer" Height="30"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Toggle Cartographer" Height="30" Margin="3,3"/>
                 <Button x:Name="ButtonCartographer" Grid.Column="1" Grid.Row="2" Content="" Margin="1,1,1,1" BorderBrush="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Click="ButtonHotkey_Click" PreviewKeyDown="ButtonHotkey_PreviewKeyDown"/>
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="New Map Dialog" Margin="3,3"/>
+                <Button x:Name="ButtonNewMap" Grid.Column="1" Grid.Row="3" Content="" Margin="1,1,1,1" BorderBrush="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
             </Grid>
             <Button x:Name="ButtonSave" Content="Save" Canvas.Left="106" Canvas.Top="128" Width="60" ToolTip="Saves these settings to be used by the application." Click="ButtonSave_Click"/>
             <Button x:Name="ButtonCancel" Content="Cancel" Canvas.Left="171" Canvas.Top="128" Width="60" ToolTip="Cancels any changes and reverts to the previous settings values." Click="ButtonCancel_Click"/>

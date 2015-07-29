@@ -131,6 +131,17 @@ namespace Cartogram
             return new KeyValuePair<int, string>(int.Parse(size.ToString()), currency);
         }
 
+        internal static KeyValuePair<int, string> ParseDivination()
+        {
+            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text).Replace("\r", "").Split(new[] {'\n'});
+            if (clipboardContents[0] != "Rarity: Normal" && clipboardContents[3].Contains("Stack Size:")) return new KeyValuePair<int, string>(-1, "");
+
+            var divination = clipboardContents[1].Trim();
+            var amount = Regex.Match(clipboardContents[3].Replace("Stack Size: ", ""), @"^.*?(?=/)");
+
+            return new KeyValuePair<int, string>(int.Parse(amount.ToString()), divination);
+        } 
+
         /// <summary>
         /// Parses the name out of a unique non-map item off the clipboard
         /// </summary>
@@ -143,6 +154,7 @@ namespace Cartogram
             var item = clipboardContents[1];
             return item;
         }
+
 
         /// <summary>
         /// Gets the affixes from the clipboard and puts them into a list
