@@ -32,6 +32,7 @@
                     <MenuItem Header="Exit"/>
                 </MenuItem>
                 <MenuItem Header="Tools">
+                    <MenuItem x:Name="MenuUnidentified" Header="Unidentified Calculator" Click="MenuUnidentified_Click"></MenuItem>
                     <MenuItem x:Name="MenuSettings" Header="Settings" Click="MenuSettings_Click"/>
                 </MenuItem>
                 <MenuItem Header="Help">

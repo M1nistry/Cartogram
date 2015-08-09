@@ -106,6 +106,9 @@
     </Compile>
     <Compile Include="SQL\ISqlInterface.cs" />
     <Compile Include="SQL\Sqlite.cs" />
+    <Compile Include="UnidentifiedMap.xaml.cs">
+      <DependentUpon>UnidentifiedMap.xaml</DependentUpon>
+    </Compile>
     <Page Include="Details.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -140,6 +143,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UnidentifiedMap.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

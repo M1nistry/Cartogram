@@ -160,6 +160,7 @@ namespace Cartogram
             {
                 CurrentMap.StartAt = DateTime.Now;
                 _main.CurrentMap = CurrentMap;
+                Settings.Default.Save();
                 Close();
                 try
                 {

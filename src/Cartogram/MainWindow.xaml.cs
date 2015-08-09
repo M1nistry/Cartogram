@@ -523,6 +523,12 @@ namespace Cartogram
             GridMaps.SelectedIndex = 0;
             _state = "DROPS";
         }
+
+        private void MenuUnidentified_Click(object sender, RoutedEventArgs e)
+        {
+            var unidentifiedCalc = new UnidentifiedMap();
+            unidentifiedCalc.Show();
+        }
     }
 
 }
