@@ -46,7 +46,7 @@ namespace Cartogram
                "Cells", "Dark Forest", "Gorge", "Maze", "Underground River", "Bazaar", "Necropolis",
                "Plateau", "Crematorium", "Precinct", "Shipyard", "Shrine", "Villa", "Palace", "Pit",
                "Desert", "Aqueduct", "Quarry", "Arena", "Abyss", "Village Ruin", "Wasteland", "Excavation",
-               "Waterways", "Core", "Volcano", "Colosseum"
+               "Waterways", "Core", "Volcano", "Colosseum", "Orchard"
             };
         }
     }

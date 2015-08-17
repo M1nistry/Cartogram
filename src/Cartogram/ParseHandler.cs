@@ -66,8 +66,6 @@ namespace Cartogram
                             newMap.ItemRarity = itemRarity;
                     }
                 }
-                
-                
                 return newMap;
             }
 
@@ -131,6 +129,10 @@ namespace Cartogram
             return new KeyValuePair<int, string>(int.Parse(size.ToString()), currency);
         }
 
+        /// <summary>
+        /// Parses the information for a Divination card including stack size.
+        /// </summary>
+        /// <returns>Keyvalue pair of stack size and card name</returns>
         internal static KeyValuePair<int, string> ParseDivination()
         {
             var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text).Replace("\r", "").Split(new[] {'\n'});

@@ -5,15 +5,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Name="Cartogram" x:Class="Cartogram.MainWindow"
-        Title="Cartogram" Height="520" Width="450" MaxWidth="450" MinWidth="450" Icon="Resources/24.ico">
+        Title="Cartogram" Height="520" Width="480" MaxWidth="480" MinWidth="450" Icon="Resources/24.ico">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="85"/>
             <RowDefinition Height="300*"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="95"/>
             <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
-        <Canvas x:Name="CanvasHeader" HorizontalAlignment="Left" Height="90" VerticalAlignment="Top" Width="442" Background="#FFF1EDED">
+        <Canvas x:Name="CanvasHeader" HorizontalAlignment="Stretch" Height="90" VerticalAlignment="Top" Background="#FFF1EDED">
             <Canvas x:Name="CanvasInformation" Height="49" Canvas.Left="10" Canvas.Top="25" Width="260" Background="White">
                 <Label x:Name="LabelRunToday" Content="Maps run today:" ToolTip="Maps run in the last 24 hours"/>
                 <Label x:Name="LabelMapsRunValue" Content="0" Canvas.Left="{Binding ActualWidth, ElementName=LabelRunToday}"/>
@@ -29,11 +29,12 @@
             <Menu x:Name="MainMenu" Height="22" Width="442" Background="#FFF1EDED" BorderThickness="0,2,0,0">
                 <MenuItem Header="File">
                     <MenuItem Header="New Map" Click="NewMap_OnClick"/>
-                    <MenuItem Header="Exit"/>
+                    <MenuItem Header="Exit" Click="MenuItem_Click"/>
                 </MenuItem>
                 <MenuItem Header="Tools">
-                    <MenuItem x:Name="MenuUnidentified" Header="Unidentified Calculator" Click="MenuUnidentified_Click"></MenuItem>
+                    <MenuItem x:Name="MenuUnidentified" Header="Unidentified Calculator" IsEnabled="False" Click="MenuUnidentified_Click"></MenuItem>
                     <MenuItem x:Name="MenuSettings" Header="Settings" Click="MenuSettings_Click"/>
+                    <MenuItem x:Name="MenuTopMost" Header="Always on top" IsCheckable="True" Click="MenuTopMost_Click"/>
                 </MenuItem>
                 <MenuItem Header="Help">
                     <MenuItem Header="Check for updates"/>
@@ -42,7 +43,57 @@
             </Menu>
         </Canvas>
         <DockPanel Grid.Row="1" Background="#FFF1EDED" >
-            <DataGrid x:Name="GridMaps" ItemsSource="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Width="422" AutoGenerateColumns="False" MinWidth="422" VerticalScrollBarVisibility="Hidden" Background="White" FontSize="11" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" SelectionChanged="GridMaps_SelectionChanged" IsReadOnly="True" ColumnHeaderHeight="22" AlternatingRowBackground="#BFE3E3E3" RowHeight="17">
+            <DataGrid x:Name="GridMaps" ItemsSource="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,5" AutoGenerateColumns="False" MinWidth="422" VerticalScrollBarVisibility="Hidden" Background="White" FontSize="11" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" SelectionChanged="GridMaps_SelectionChanged" IsReadOnly="True" ColumnHeaderHeight="22" AlternatingRowBackground="#BFE3E3E3" RowHeight="17">
+                <DataGrid.Resources>
+                    <Style x:Key="CellRarity" TargetType="{x:Type DataGridCell}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding rarity}" Value="Magic">
+                                <Setter Property="Foreground" Value="Blue" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding rarity}" Value="Rare">
+                                <Setter Property="Foreground" Value="Goldenrod" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding rarity}" Value="Unique">
+                                <Setter Property="Foreground" Value="DarkOrange"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                    <Style x:Key="CellQuality" TargetType="{x:Type DataGridCell}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding 'quality'}" Value="0">
+                                <Setter Property="Foreground" Value="Transparent"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                    <Style x:Key="CellMinus" TargetType="{x:Type DataGridCell}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding '-'}" Value="0">
+                                <Setter Property="Foreground" Value="Transparent"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                    <Style x:Key="CellEven" TargetType="{x:Type DataGridCell}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding even}" Value="0">
+                                <Setter Property="Foreground" Value="Transparent"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                    <Style x:Key="CellPlus1" TargetType="{x:Type DataGridCell}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding '+1'}" Value="0">
+                                <Setter Property="Foreground" Value="Transparent"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                    <Style x:Key="CellPlus2" TargetType="{x:Type DataGridCell}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding '+2'}" Value="0">
+                                <Setter Property="Foreground" Value="Transparent"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
                 <DataGrid.CellStyle>
                     <Style TargetType="{x:Type DataGridCell}">
                         <Setter Property="BorderThickness" Value="0"/>
@@ -51,25 +102,45 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding id}" ClipboardContentBinding="{x:Null}" Header="id" x:Name="idColumn" Width="150*" Visibility="Hidden"/>
                     <DataGridTextColumn Binding="{Binding mysql_id}" ClipboardContentBinding="{x:Null}" Header="mysqlid" Width="150*" Visibility="Hidden"/>
-                    <DataGridTextColumn Binding="{Binding name}" ClipboardContentBinding="{x:Null}" Header="Map" Width="150*"/>
-                    <DataGridTextColumn Binding="{Binding gained}" ClipboardContentBinding="{x:Null}" Header="Gained %" Width="57"/>
+                    <DataGridTextColumn Binding="{Binding name}" ClipboardContentBinding="{x:Null}" Header="Map" Width="150*"  CellStyle="{StaticResource CellRarity}">
+                        <!--<DataGridTextColumn.ElementStyle>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Style.Triggers>
+                                    <Trigger Property="Text" Value="Magic">
+                                        <Setter Property="Background" Value="LightBlue"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>-->
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Binding="{Binding gained}" ClipboardContentBinding="{x:Null}" Header="Exp %" Width="45"/>
                     <DataGridTextColumn Binding="{Binding level}" ClipboardContentBinding="{x:Null}" Header="Level" Width="36"/>
-                    <DataGridTextColumn Binding="{Binding quantity}" ClipboardContentBinding="{x:Null}" Header="Quantity"/>
-                    <DataGridTextColumn Binding="{Binding quality}" ClipboardContentBinding="{x:Null}" Header="Quality"/>
-                    <DataGridTextColumn Binding="{Binding '-'}" ClipboardContentBinding="{x:Null}" Header="-"/>
-                    <DataGridTextColumn Binding="{Binding even}" ClipboardContentBinding="{x:Null}" Header=" "/>
-                    <DataGridTextColumn Binding="{Binding '+'}" ClipboardContentBinding="{x:Null}" Header="+"/>
+                    <DataGridTextColumn Binding="{Binding quantity}" ClipboardContentBinding="{x:Null}" Header="Quantity" x:Name="GridQuantityColumn"/>
+                    <DataGridTextColumn Binding="{Binding quality}" ClipboardContentBinding="{x:Null}" Header="Quality" x:Name="GridQualityColumn" CellStyle="{StaticResource CellQuality}"/>
+                    <DataGridTextColumn Binding="{Binding itemrarity}" ClipboardContentBinding="{x:Null}" Header="Rarity" x:Name="GridRarityColumn"/>
+                    <DataGridTextColumn Binding="{Binding packsize}" ClipboardContentBinding="{x:Null}" Header="Pack" x:Name="GridPacksizeColumn"/>
+                    <DataGridTextColumn Binding="{Binding '-'}" ClipboardContentBinding="{x:Null}" Header="-" CellStyle="{StaticResource CellMinus}"/>
+                    <DataGridTextColumn Binding="{Binding even}" ClipboardContentBinding="{x:Null}" Header=" " CellStyle="{StaticResource CellEven}"/>
+                    <DataGridTextColumn Binding="{Binding '+1'}" ClipboardContentBinding="{x:Null}" Header="1" CellStyle="{StaticResource CellPlus1}"/>
+                        <DataGridTextColumn Binding="{Binding '+2'}" ClipboardContentBinding="{x:Null}" Header="2" CellStyle="{StaticResource CellPlus2}"/>
                 </DataGrid.Columns>
                 <DataGrid.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Details" Click="GridMaps_DetailsClick"/>
                         <MenuItem Header="Delete" Click="GridMaps_DeleteClick"/>
+                        <Separator/>
+                        <MenuItem Header="Hide Columns">
+                            <MenuItem x:Name="MenuHideQuantity" Header="Quantity" IsCheckable="True" Click="MenuItemHideColumns_Click"/>
+                            <MenuItem x:Name="MenuHideQuality" Header="Quality" IsCheckable="True" Click="MenuItemHideColumns_Click"/>
+                            <MenuItem x:Name="MenuHideRarity" Header="Rarity" IsCheckable="True" Click="MenuItemHideColumns_Click"/>
+                            <MenuItem x:Name="MenuHidePacksize" Header="Pack Size" IsCheckable="True" Click="MenuItemHideColumns_Click"/>
+                        </MenuItem>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
             </DataGrid>
         </DockPanel>
-        <Canvas Grid.Row="2" Background="#FFF1EDED">
-            <DataGrid x:Name="GridDrops" ItemsSource="{Binding}" Canvas.Left="9" Canvas.Top="10" Height="80" Width="422" Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" VerticalScrollBarVisibility="Disabled" FontSize="11" CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" HeadersVisibility="None" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" CanUserResizeRows="False" BorderBrush="#FF688CAF" RowHeight="20" IsReadOnly="True">
+        <DockPanel Grid.Row="2" Background="#FFF1EDED">
+            <DataGrid x:Name="GridDrops" ItemsSource="{Binding}" Margin="10,5" Background="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" VerticalScrollBarVisibility="Disabled" FontSize="11" CanUserReorderColumns="False" CanUserResizeColumns="False" CanUserSortColumns="False" HeadersVisibility="None" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" CanUserResizeRows="False" BorderBrush="#FF688CAF" RowHeight="20" IsReadOnly="True">
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#FFFFFF"/>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black"/>
@@ -101,9 +172,9 @@
                 
                 </DataGrid.Columns>
             </DataGrid>
-        </Canvas>
+        </DockPanel>
         <Canvas Grid.Row="3">
-            <local:ExtendedStatusStrip x:Name="ExtendedStatusStrip" Width="442" Height="25" Canvas.Top="0" Timestamps="True"/>
+            <local:ExtendedStatusStrip x:Name="ExtendedStatusStrip" Width="471" Height="25" Canvas.Top="0" Timestamps="True"/>
         </Canvas>
     </Grid>
 

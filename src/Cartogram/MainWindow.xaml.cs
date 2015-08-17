@@ -79,7 +79,7 @@ namespace Cartogram
                 Interval = TimeSpan.FromSeconds(1),
                 IsEnabled = false
             };
-            
+            LoadSettings();
             _mapTimer.Tick += _mapTimer_Elapsed;
             LeagueObject = JsonHandler.ParseJsonObject("http://api.exiletools.com/ladder?listleagues=1");
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
@@ -105,10 +105,12 @@ namespace Cartogram
 
         protected override void OnClosed(EventArgs e)
         {
+
+            UnregisterHotkeys();
+            if (_source == null) return;
             _source.RemoveHook(WndProc);
             _source = null;
             base.OnClosed(e);
-            UnregisterHotkeys();
         }
 
         /// <summary>
@@ -140,7 +142,22 @@ namespace Cartogram
             UnregisterHotKey(helper.Handle, 2);
         }
 
-        
+        private void LoadSettings()
+        {
+            MenuHideQuantity.IsChecked = Settings.Default.HideQuantity;
+            GridQuantityColumn.Visibility = MenuHideQuantity.IsChecked ? Visibility.Hidden : Visibility.Visible;
+
+            MenuHideQuality.IsChecked = Settings.Default.HideQuality;
+            GridQuantityColumn.Visibility = MenuHideQuality.IsChecked ? Visibility.Hidden : Visibility.Visible;
+
+            MenuHideRarity.IsChecked = Settings.Default.HideRarity;
+            GridRarityColumn.Visibility = MenuHideRarity.IsChecked ? Visibility.Hidden : Visibility.Visible;
+
+            MenuHidePacksize.IsChecked = Settings.Default.HidePacksize;
+            GridPacksizeColumn.Visibility = MenuHidePacksize.IsChecked ? Visibility.Hidden : Visibility.Visible;
+
+            MenuTopMost.IsChecked = Settings.Default.Topmost;
+        }
 
         private void UpdateInformation()
         {
@@ -251,7 +268,7 @@ namespace Cartogram
                                 if (CurrentMap.Id <= 0) break;
                                 try
                                 {
-                                    if (clipboard.Contains("Map"))
+                                    if (clipboard.Contains("Map") && !clipboard.Contains("Stack Size:"))
                                     {
                                         var parsedMap = ParseHandler.ParseClipboard();
                                         if (parsedMap == null) break;
@@ -269,6 +286,12 @@ namespace Cartogram
                                         var parsedUnique = ParseHandler.ParseUnique();
                                         Sqlite.AddUnique(CurrentMap.Id, parsedUnique);
                                         //if (publicOpt && _mySqlId > 0) Sqlite.AddUnique(_mySqlId, parsedUnique);
+                                    }
+                                    if (clipboard.Contains("Rarity: Normal") && clipboard.Contains("Stack Size:")
+                                        && (!clipboard.Split('\n')[1].Contains("Map") || !clipboard.Split('\n')[2].Contains("Map")))
+                                    {
+                                        var parsedDivcard = ParseHandler.ParseDivination();
+                                        Sqlite.AddDivination(CurrentMap.Id, parsedDivcard);
                                     }
                                     RefreshGrids();
                                     GridMaps.SelectedIndex = 0;
@@ -316,6 +339,7 @@ namespace Cartogram
                                 CurrentMap = null;
                                 _state = "WAITING";
                                 UpdateInformation();
+                                //TODO fix for occurance of character leveling in the map
                                 //var expDiff = expAfter.CurrentExperience - CurrentMap.ExpBefore.CurrentExperience;
                                 //var expGoal = Sqlite.ExperienceGoal(CurrentMap.ExpBefore.Level);
                                 //var percentDiff = (float)expDiff / expGoal;
@@ -385,13 +409,18 @@ namespace Cartogram
         private string CaptureExp()
         {
             var previousPoint = System.Windows.Forms.Cursor.Position;
-            System.Windows.Forms.Cursor.Position = new System.Drawing.Point((Screen.PrimaryScreen.Bounds.Width / 2) - 200, Screen.PrimaryScreen.Bounds.Height);
-            System.Windows.Forms.Cursor.Clip = new Rectangle(System.Windows.Forms.Cursor.Position, new System.Drawing.Size(1, 1));
+            System.Windows.Forms.Cursor.Position = new System.Drawing.Point(
+                (Screen.PrimaryScreen.Bounds.Width/2) - 200, Screen.PrimaryScreen.Bounds.Height);
+            System.Windows.Forms.Cursor.Clip = new Rectangle(System.Windows.Forms.Cursor.Position,
+                new System.Drawing.Size(1, 1));
             Thread.Sleep(750);
-            var bmpScreenshot = new Bitmap((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight,
-                                                           System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            var bmpScreenshot = new Bitmap((int) SystemParameters.PrimaryScreenWidth,
+                (int) SystemParameters.PrimaryScreenHeight,
+                System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             var gfxScreenshot = Graphics.FromImage(bmpScreenshot);
-            gfxScreenshot.CopyFromScreen(System.Windows.Forms.Cursor.Position.X + 35, System.Windows.Forms.Cursor.Position.Y - 60, 0, 0, new System.Drawing.Size(580, 500), CopyPixelOperation.SourceCopy);
+            gfxScreenshot.CopyFromScreen(System.Windows.Forms.Cursor.Position.X + 35,
+                System.Windows.Forms.Cursor.Position.Y - 60, 0, 0, new System.Drawing.Size(580, 500),
+                CopyPixelOperation.SourceCopy);
             bmpScreenshot.Save("Screenshot.bmp");
 
             var image = Pix.LoadFromFile(Directory.GetCurrentDirectory() + "\\Screenshot.bmp");
@@ -407,29 +436,6 @@ namespace Cartogram
             File.Delete(Directory.GetCurrentDirectory() + "\\Screenshot.bmp");
             System.Windows.Forms.Cursor.Position = new System.Drawing.Point(previousPoint.X, previousPoint.Y);
             return result;
-        }
-
-        /// <summary>
-        /// Parses the captured experience into the Experience object
-        /// </summary>
-        /// <returns>Experience object containing all the details</returns>
-        internal Experience ExpValue()
-        {
-            var exp = CaptureExp();
-            var currentPercent = Regex.Match(exp, @"(?<=\().+?(?=\%)");
-            var currentLevel = Regex.Match(exp, @"(?<=el ).+?(?=\ )");
-            var currentExperience = Regex.Match(exp, @"(?<=p: ).+?(?=\ )");
-            var nextLevel = Regex.Match(exp.Replace("\n", ""), @"(?<=l: ).+?(?=$)");
-            int level, percent;
-            long currentExp, expToLevel;
-            var expObj = new Experience
-            {
-                Level = currentLevel.Success ? int.TryParse(currentLevel.Groups[0].ToString(), out level) ? level : 0 : 0,
-                Percentage = currentPercent.Success ? int.TryParse(currentPercent.Groups[0].ToString(), out percent) ? percent : 0 : 0,
-                CurrentExperience = currentExperience.Success ? long.TryParse(currentExperience.Groups[0].ToString().Replace(",", ""), out currentExp) ? currentExp : 0 : 0,
-                NextLevelExperience = nextLevel.Success ? long.TryParse(nextLevel.Groups[0].ToString().Replace(",", ""), out expToLevel) ? expToLevel : 0 : 0
-            };
-            return expObj;
         }
 
         #endregion
@@ -529,6 +535,44 @@ namespace Cartogram
             var unidentifiedCalc = new UnidentifiedMap();
             unidentifiedCalc.Show();
         }
-    }
 
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void MenuItemHideColumns_Click(object sender, RoutedEventArgs e)
+        {
+            switch(((System.Windows.Controls.MenuItem)e.Source).Header.ToString())
+            {
+                case ("Quantity"):
+                    Settings.Default.HideQuantity = MenuHideQuantity.IsChecked;
+                    GridQuantityColumn.Visibility = MenuHideQuantity.IsChecked ? Visibility.Hidden : Visibility.Visible;
+                    break;
+                case ("Quality"):
+                    Settings.Default.HideQuality = MenuHideQuality.IsChecked;
+                    GridQualityColumn.Visibility = MenuHideQuality.IsChecked ? Visibility.Hidden : Visibility.Visible;
+                    break;
+
+                case ("Rarity"):
+                    Settings.Default.HideRarity = MenuHideRarity.IsChecked;
+                    GridRarityColumn.Visibility = MenuHideRarity.IsChecked ? Visibility.Hidden : Visibility.Visible;
+                    break;
+
+                case ("Pack Size"):
+                    Settings.Default.HidePacksize = MenuHidePacksize.IsChecked;
+                    GridPacksizeColumn.Visibility = MenuHidePacksize.IsChecked ? Visibility.Hidden : Visibility.Visible;
+                    break;
+            }
+            Settings.Default.Save();
+        }
+
+        private void MenuTopMost_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.Topmost = MenuTopMost.IsChecked;
+            Topmost = MenuTopMost.IsChecked;
+            Settings.Default.Save();
+        }
+
+    }
 }

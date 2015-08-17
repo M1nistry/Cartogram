@@ -18,9 +18,9 @@
             <TextBlock x:Name="LabelQuality" Text="Quality: %" HorizontalAlignment="Center" FontSize="10.667"/>
             <Separator Width="200" Margin="0,5" Background="#FFD6D6D6"/>
             <StackPanel x:Name="StackAffixes"/>
-            <Separator Width="200" Margin="0,5" Background="#FFD6D6D6"/>
         </StackPanel>
         <StackPanel x:Name="StackExperience" Grid.Row="1" VerticalAlignment="Bottom">
+            <Separator Width="200" Margin="0,5" Background="#FFD6D6D6"/>
             <TextBlock x:Name="LabelLeague" Text="League:" HorizontalAlignment="Center" FontSize="10.667"/>
             <TextBlock x:Name="LabelCharacter" Text="Character:" HorizontalAlignment="Center" FontSize="10.667"/>
             <TextBlock x:Name="LabelDate" Text="" HorizontalAlignment="Center" FontSize="10.667"/>

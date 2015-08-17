@@ -7,21 +7,52 @@
         Title="Unidentified Map Calculator" Height="500" Width="642">
     <Grid Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="70"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Canvas Grid.Row="0" Margin="0,5,0,0" >
-            <Label x:Name="LabelQuantity" Content="Item Quantity: " Canvas.Left="10" Canvas.Top="5"/>
-            <TextBox x:Name="TextBoxQuantity" Width="50" Height="22" Canvas.Left="99" Canvas.Top="8"/>
-            <TextBox x:Name="TextBoxMapQuantity" Width="50" Height="22" Canvas.Left="190" Canvas.Top="8"/>
-            <Label x:Name="ZanaLevel" Content="Zana Level: " Height="25" Canvas.Left="344" Canvas.Top="5" Width="72"/>
-            <Slider x:Name="ZanaValue" Maximum="8" SmallChange="1000" Height="20" Canvas.Left="421" Canvas.Top="10" Width="65"/>
-            <Label x:Name="ZanaInt" Content="0" Height="25" Canvas.Left="486" Canvas.Top="5" Width="16"/>
-            <Expander x:Name="ExpandFilter" Width="110" Header="Filter" Template="{StaticResource RevealExpanderTemp}"
-                      OverridesDefaultStyle="True" Canvas.Left="514" Canvas.Top="10" IsExpanded="False">
+        <Expander x:Name="FilterExpander"
+                Template="{StaticResource RevealExpanderTemp}"
+                Grid.Row="0"
+                OverridesDefaultStyle="True"
+                Header="Filter"
+                Margin="10, 15, 10, 10"
+                Width="200"
+                HorizontalAlignment="Right">
+            <Popup x:Name="PopupFilter" PlacementTarget="{Binding ElementName=FilterExpander}" Height="115" Width="205" PopupAnimation="Fade" Placement="Bottom" AllowsTransparency="True" IsOpen="{Binding ElementName=FilterExpander, Path=IsExpanded}" Margin="0,0,0,0">
+                <Canvas Margin="0,0,0,0" Width="405" Height="115">
+                    <Border  BorderThickness="1,1,1,1" BorderBrush="#72636363" Width="502" Height="112"/>
+                    <Border Margin="0 0 5 5" Width="405" Height="115">
+                        <Border.Effect>
+                            <DropShadowEffect Opacity="0.55" BlurRadius="5" ShadowDepth="3" />
+                        </Border.Effect>
+                        <Grid Background="#FFF0F0F0" Margin="1,1,4,4" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="55"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="28"/>
+                                <RowDefinition Height="28"/>
+                                <RowDefinition Height="22"/>
+                            </Grid.RowDefinitions>
 
-            </Expander>
-            <CheckBox x:Name="CheckBoxCorrupted" Content="Corrupted?" Canvas.Left="260" Canvas.Top="11"/>
+                            <!--<TextBlock x:Name="TextBlockTitle" Canvas.Left="10" TextWrapping="Wrap" Text="Hello World" Canvas.Top="10"/>-->
+                        </Grid>
+                    </Border>
+                </Canvas>
+            </Popup>
+        </Expander>
+        <Canvas Grid.Row="0" Margin="0,5,0,0" >
+            <Label x:Name="LabelQuantity" Content="Item Quantity: " Canvas.Left="10" Canvas.Top="31"/>
+            <TextBox x:Name="TextBoxQuantity" Width="50" Height="22" Canvas.Left="101" Canvas.Top="35"/>
+            <TextBox x:Name="TextBoxMapQuantity" Width="50" Height="22" Canvas.Left="101" Canvas.Top="10" ToolTip="This is the quantity if the map dropped as superior or you added chisels to it unid"/>
+            <Label x:Name="ZanaLevel" Content="Zana Level: " Height="25" Canvas.Left="245" Canvas.Top="7" Width="72"/>
+            <Slider x:Name="ZanaValue" Maximum="8" SmallChange="1000" Height="20" Canvas.Left="322" Canvas.Top="10" Width="65"/>
+            <Label x:Name="ZanaInt" Content="0" Height="25" Canvas.Left="387" Canvas.Top="7" Width="16"/>
+            
+            <CheckBox x:Name="CheckBoxCorrupted" Content="Corrupted?" Canvas.Left="161" Canvas.Top="14"/>
+            <Label x:Name="LabelUnidQuantity" Content="Unid Quantity:" Canvas.Left="10" Canvas.Top="8" ToolTip="This is the quantity if the map dropped as superior or you added chisels to it unid"/>
         </Canvas>
         <DataGrid Grid.Row="1" Margin="10">
             <DataGrid.Columns>

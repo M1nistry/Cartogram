@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using Cartogram.JSON;
 using Cartogram.Properties;
 using Cartogram.SQL;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Cartogram
 {
@@ -151,25 +155,32 @@ namespace Cartogram
             //_main.CurrentMap.SqlId = _mySqlId;
 
             if (_main.CurrentMap != null || CurrentMap == null) return;
+
             CurrentMap.Quantity = CurrentMap.Quantity + Settings.Default.ZanaQuantity;
             CurrentMap.OwnMap = radioButtonOwn.IsChecked == true;
             CurrentMap.League = ComboLeague.Text;
             CurrentMap.Character = ComboBoxName.Text;
             CurrentMap.Id = Sqlite.AddMap(CurrentMap);
+
             if (CurrentMap.Id > 0)
             {
                 CurrentMap.StartAt = DateTime.Now;
                 _main.CurrentMap = CurrentMap;
                 Settings.Default.Save();
-                Close();
                 try
                 {
-                    Clipboard.Clear();
+                    System.Windows.Forms.Clipboard.SetDataObject(string.Empty, false, 5, 200);
                 }
                 catch
                 {
-                    Clipboard.SetText(string.Empty);
+                    _main.ExtendedStatusStrip.AddStatus("Failed to clear clipboard");
                 }
+                Close();
+            }
+            else
+            {
+                MessageBox.Show(@"Failed inserting Map into database, please try again",
+                    @"Failed inserting into database", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -191,6 +202,7 @@ namespace Cartogram
                     if (ParseHandler.CheckClipboard())
                     {
                         CurrentMap = ParseHandler.ParseClipboard();
+                        //CurrentMap.ExpBefore = ExpValue();
                         if (CurrentMap == null) break;
                         PopulateMapInformation();
                         MapInformation.IsExpanded = true;
@@ -213,6 +225,44 @@ namespace Cartogram
             LabelMapValue.Text = mapInformation.Zone;
             LabelBossValue.Text = mapInformation.Boss;
             LabelDescription.Text = mapInformation.BossDetails;
+        }
+
+        private string GetExperience()
+        {
+            Thread.Sleep(500);
+            System.Windows.Forms.Cursor.Position = new System.Drawing.Point((Screen.PrimaryScreen.Bounds.Width / 2) - 200, Screen.PrimaryScreen.Bounds.Height);
+            SendKeys.SendWait("^c");
+            var clipboardContents = System.Windows.Clipboard.GetText();
+            if (!clipboardContents.Contains("Current Exp:"))
+            {
+                MessageBox.Show(@"Failed capturing experience, please try again.", @"Experience Error");
+                return string.Empty;
+            }
+            return clipboardContents;
+        }
+
+        /// <summary>
+        /// Parses the captured experience into the Experience object
+        /// </summary>
+        /// <returns>Experience object containing all the details</returns>
+        internal Experience ExpValue()
+        {
+            var exp = GetExperience();
+            if (exp == string.Empty) return null;
+            var currentPercent = Regex.Match(exp, @"(?<=\().+?(?=\%)");
+            var currentLevel = Regex.Match(exp, @"(?<=el ).+?(?=\ )");
+            var currentExperience = Regex.Match(exp, @"(?<=p: ).+?(?=\ )");
+            var nextLevel = Regex.Match(exp, @"(?<=l: ).+?(?=\n)");
+            int level, percent;
+            long currentExp, expToLevel;
+            var expObj = new Experience
+            {
+                Level = currentLevel.Success ? int.TryParse(currentLevel.Groups[0].ToString(), out level) ? level : 0 : 0,
+                Percentage = currentPercent.Success ? int.TryParse(currentPercent.Groups[0].ToString(), out percent) ? percent : 0 : 0,
+                CurrentExperience = currentExperience.Success ? long.TryParse(currentExperience.Groups[0].ToString().Replace(",", ""), out currentExp) ? currentExp : 0 : 0,
+                NextLevelExperience = nextLevel.Success ? long.TryParse(nextLevel.Groups[0].ToString().Replace(",", ""), out expToLevel) ? expToLevel : 0 : 0
+            };
+            return expObj;
         }
 
         #endregion

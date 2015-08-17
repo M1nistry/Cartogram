@@ -94,5 +94,65 @@ namespace Cartogram.Properties {
                 this["SelectedLeague"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HideQuantity {
+            get {
+                return ((bool)(this["HideQuantity"]));
+            }
+            set {
+                this["HideQuantity"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HideQuality {
+            get {
+                return ((bool)(this["HideQuality"]));
+            }
+            set {
+                this["HideQuality"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HideRarity {
+            get {
+                return ((bool)(this["HideRarity"]));
+            }
+            set {
+                this["HideRarity"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HidePacksize {
+            get {
+                return ((bool)(this["HidePacksize"]));
+            }
+            set {
+                this["HidePacksize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Topmost {
+            get {
+                return ((bool)(this["Topmost"]));
+            }
+            set {
+                this["Topmost"] = value;
+            }
+        }
     }
 }

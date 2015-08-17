@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Windows.Input.StylusPlugIns;
 
 namespace Cartogram.SQL
 {
@@ -43,7 +44,7 @@ namespace Cartogram.SQL
                     {
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `maps` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `mysql_id` INTEGER DEFAULT 0, `rarity` TEXT, `level` INTEGER, `name` TEXT, 
                                             `quality` INTEGER, `quantity` INTEGER, `started_at` DATETIME, `finished_at` DATETIME, `notes` TEXT, `league` TEXT, `character` TEXT, `unidentified` INTEGER NOT NULL,
-                                            `ownmap` INTEGER NOT NULL, `item_rarity` INTEGER NOT NULL);";
+                                            `ownmap` INTEGER NOT NULL, `item_rarity` INTEGER NOT NULL, `pack_size` INTEGER NOT NULL);";
                         cmd.ExecuteNonQuery();
 
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `affixes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `map_id` INTEGER, `affix` TEXT);";
@@ -60,6 +61,9 @@ namespace Cartogram.SQL
                         cmd.ExecuteNonQuery();
 
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `divination_drops` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `map_id` INTEGER, `name` TEXT, `count` INTEGER)";
+                        cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = @"CREATE UNIQUE INDEX IF NOT EXISTS divination_idx ON divination_drops(map_id, name)";
                         cmd.ExecuteNonQuery();
 
                         cmd.CommandText = @"CREATE UNIQUE INDEX  IF NOT EXISTS currency_idx ON currency_drops(map_id, name);";
@@ -94,8 +98,8 @@ namespace Cartogram.SQL
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
-                const string addQuery = @"INSERT INTO `maps` (`rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`, `unidentified`, `ownmap`, `item_rarity`) VALUES 
-                                                             (@rarity, @level, @name, @quality, @quantity, @startedat, @league, @character, @unidentified, @ownmap, @itemrarity)";
+                const string addQuery = @"INSERT INTO `maps` (`rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`, `unidentified`, `ownmap`, `item_rarity`, `pack_size`) VALUES 
+                                                             (@rarity, @level, @name, @quality, @quantity, @startedat, @league, @character, @unidentified, @ownmap, @itemrarity, @packsize)";
                 using (var cmd = new SQLiteCommand(addQuery, connection))
                 {
                     //cmd.Parameters.AddWithValue("mysqlid", newMap.SqlId);
@@ -110,6 +114,7 @@ namespace Cartogram.SQL
                     cmd.Parameters.AddWithValue("unidentified", newMap.Unidentified);
                     cmd.Parameters.AddWithValue("ownmap", newMap.OwnMap);
                     cmd.Parameters.AddWithValue("itemrarity", newMap.ItemRarity);
+                    cmd.Parameters.AddWithValue("packsize", newMap.PackSize);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -172,7 +177,7 @@ namespace Cartogram.SQL
                             return new Map
                             {
                                 Id = int.TryParse(reader["id"].ToString(), out id) ? id : -1,
-                                Rarity = reader["rarity"].ToString(),
+                                Rarity = reader.GetString(2),
                                 Level = int.TryParse(reader["level"].ToString(), out level) ? level : -1,
                                 Name = reader["name"].ToString(),
                                 Quality = int.TryParse(reader["quality"].ToString(), out quality) ? quality : -1,
@@ -206,9 +211,12 @@ namespace Cartogram.SQL
             dtMaps.Columns.Add("rarity");
             dtMaps.Columns.Add("quality");
             dtMaps.Columns.Add("quantity");
+            dtMaps.Columns.Add("itemrarity");
+            dtMaps.Columns.Add("packsize");
             dtMaps.Columns.Add("-");
             dtMaps.Columns.Add("even");
-            dtMaps.Columns.Add("+");
+            dtMaps.Columns.Add("+1");
+            dtMaps.Columns.Add("+2");
 
             try
             {
@@ -225,9 +233,10 @@ namespace Cartogram.SQL
                                 var sqlId = int.Parse(reader["mysql_id"].ToString());
                                 dtMaps.Rows.Add(mapId, sqlId, int.Parse(reader["level"].ToString()),
                                     reader["name"].ToString(), $"{ExpGained(mapId):N2}",
-                                    reader["rarity"].ToString(), int.Parse(reader["quality"].ToString()),
-                                    int.Parse(reader["quantity"].ToString()), MapDrops(mapId, "<"),
-                                    MapDrops(mapId, "="), MapDrops(mapId, ">"));
+                                    reader.GetString(2), int.Parse(reader["quality"].ToString()),
+                                    int.Parse(reader["quantity"].ToString()), int.Parse(reader["item_rarity"].ToString()),
+                                    int.Parse(reader["pack_size"].ToString()), MapDrops(mapId, "<",""), MapDrops(mapId, "=",""), 
+                                    MapDrops(mapId, "=", "+1"), MapDrops(mapId, "=", "+2"));
                             }
                         }
                     }
@@ -342,11 +351,12 @@ namespace Cartogram.SQL
             }
         }
 
-        public static int MapDrops(int mapId, string symbol)
+        public static int MapDrops(int mapId, string symbol, string plus)
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
                 var queryMaps = @"SELECT count(d.level) FROM map_drops d JOIN maps m ON d.map_id=m.id WHERE d.map_id=@mapId AND d.level " + symbol + @" m.level ";
+                if (plus.Length > 0) queryMaps += plus;
                 using (var cmd = new SQLiteCommand(queryMaps, connection))
                 {
                     cmd.Parameters.AddWithValue("mapId", mapId);
@@ -406,6 +416,21 @@ namespace Cartogram.SQL
                 {
                     cmd.Parameters.AddWithValue("id", mapId);
                     cmd.Parameters.AddWithValue("name", name);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static void AddDivination(int mapId, KeyValuePair<int, string> divination)
+        {
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string insertCurrency = @"INSERT OR REPLACE INTO `divination_drops` (`map_id`, `name`, `count`) VALUES (@id, @name, COALESCE((SELECT count FROM divination_drops WHERE name=@name AND map_id=@id), 0) + @count)";
+                using (var cmd = new SQLiteCommand(insertCurrency, connection))
+                {
+                    cmd.Parameters.AddWithValue("id", mapId);
+                    cmd.Parameters.AddWithValue("name", divination.Value);
+                    cmd.Parameters.AddWithValue("count", divination.Key);
                     cmd.ExecuteNonQuery();
                 }
             }
