@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Starting new map..." Height="140" Width="438" ResizeMode="NoResize" Topmost="True" WindowStartupLocation="CenterScreen" Icon="Resources/24.ico">
+        Title="Starting new map..." Height="160" Width="438" ResizeMode="NoResize" Topmost="True" WindowStartupLocation="CenterScreen" Icon="Resources/24.ico">
 
     <Grid Background="#FFF1EDED">
         <Canvas>
@@ -14,7 +14,7 @@
                       Header="Map Details"
                       IsExpanded="False"
                       Expanded="MapInformation_Expanded" Collapsed="MapInformation_Collapsed"
-                      Width="402" Height="192" Canvas.Left="10" Canvas.Top="75">
+                      Width="402" Height="192" Canvas.Left="10" Canvas.Top="95">
                 <Grid Height="171">
                     <Grid.RowDefinitions>
                         <RowDefinition  Height="5"/>
@@ -62,11 +62,25 @@
             <Label x:Name="ZanaLevel" Content="Zana Level: " Margin="219,9,142,64" Height="25"/>
             <Slider x:Name="ZanaValue" Maximum="8" ValueChanged="ZanaValue_ValueChanged" SmallChange="1000" Height="20" Canvas.Left="296" Canvas.Top="14" Width="100"/>
             <Label x:Name="ZanaInt" Content="0" Height="25" Canvas.Left="396" Canvas.Top="9"/>
+            <Label x:Name="ZanaMod" Content="Zana Mod: " Height="25" Canvas.Left ="221" Canvas.Top="40"/>
+            <ComboBox x:Name="ComboZanaMod" Width="120" Canvas.Left="294" Canvas.Top="41" Height="24">
+               <ComboBox.Items>
+                    <ComboBoxItem Content="Ambush"/>
+                    <ComboBoxItem Content="Anarchy"/>
+                    <ComboBoxItem Content="Beyond"/>
+                    <ComboBoxItem Content="Bloodlines"/>
+                    <ComboBoxItem Content="Domination"/>
+                    <ComboBoxItem Content="Invasion"/>
+                    <ComboBoxItem Content="Onslaught"/>
+                    <ComboBoxItem Content="Rampage"/>
+                    <ComboBoxItem Content="Torment"/>
+                </ComboBox.Items>
+            </ComboBox>
             <Label x:Name="LabelLeague" Content="League:" Margin="0,12,380,64" Height="26" />
-            <Button x:Name="ButtonStart" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="ButtonStart_Click" Canvas.Left="225" Canvas.Top="75"/>
-            <Button x:Name="ButtonCancel" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="ButtonCancel_Click" Canvas.Left="337" Canvas.Top="75"/>
-            <RadioButton x:Name="radioButtonOwn" Content="Own Map" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="True" Canvas.Left="229" Canvas.Top="45"/>
-            <RadioButton x:Name="radioButtonParty" Content="Party Members" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="305" Canvas.Top="46"/>
+            <Button x:Name="ButtonStart" Content="Start" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="ButtonStart_Click" Canvas.Left="225" Canvas.Top="95"/>
+            <Button x:Name="ButtonCancel" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Click="ButtonCancel_Click" Canvas.Left="337" Canvas.Top="95"/>
+            <RadioButton x:Name="radioButtonOwn" Content="Own Map" HorizontalAlignment="Left" VerticalAlignment="Top" IsChecked="True" Canvas.Left="225" Canvas.Top="72"/>
+            <RadioButton x:Name="radioButtonParty" Content="Party Members" HorizontalAlignment="Left" VerticalAlignment="Top" Canvas.Left="310" Canvas.Top="72"/>
         </Canvas>
     </Grid>
 </Window>

@@ -157,7 +157,16 @@ namespace Cartogram
 
             if (_main.CurrentMap != null || CurrentMap == null) return;
 
-            CurrentMap.Quantity = CurrentMap.Quantity + Settings.Default.ZanaQuantity;
+
+            CurrentMap.Quantity = CurrentMap.Quantity;
+            if (ComboZanaMod.SelectionBoxItem != null)
+            {
+                CurrentMap.ZanaMod = ComboZanaMod.SelectionBoxItem.ToString();
+            }
+            else
+            {
+                CurrentMap.Quantity += Settings.Default.ZanaQuantity;
+            }
             CurrentMap.OwnMap = radioButtonOwn.IsChecked == true;
             CurrentMap.League = ComboLeague.Text;
             CurrentMap.Character = ComboBoxName.Text;

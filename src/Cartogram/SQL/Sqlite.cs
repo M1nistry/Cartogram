@@ -44,7 +44,7 @@ namespace Cartogram.SQL
                     {
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `maps` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `mysql_id` INTEGER DEFAULT 0, `rarity` TEXT, `level` INTEGER, `name` TEXT, 
                                             `quality` INTEGER, `quantity` INTEGER, `started_at` DATETIME, `finished_at` DATETIME, `notes` TEXT, `league` TEXT, `character` TEXT, `unidentified` INTEGER NOT NULL,
-                                            `ownmap` INTEGER NOT NULL, `item_rarity` INTEGER NOT NULL, `pack_size` INTEGER NOT NULL);";
+                                            `ownmap` INTEGER NOT NULL, `item_rarity` INTEGER NOT NULL, `pack_size` INTEGER NOT NULL, `zana_mod` TEXT);";
                         cmd.ExecuteNonQuery();
 
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `affixes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `map_id` INTEGER, `affix` TEXT);";
@@ -98,8 +98,8 @@ namespace Cartogram.SQL
         {
             using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
             {
-                const string addQuery = @"INSERT INTO `maps` (`rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`, `unidentified`, `ownmap`, `item_rarity`, `pack_size`) VALUES 
-                                                             (@rarity, @level, @name, @quality, @quantity, @startedat, @league, @character, @unidentified, @ownmap, @itemrarity, @packsize)";
+                const string addQuery = @"INSERT INTO `maps` (`rarity`, `level`, `name`, `quality`, `quantity`, `started_at`, `league`, `character`, `unidentified`, `ownmap`, `item_rarity`, `pack_size`, `zana_mod`) VALUES 
+                                                             (@rarity, @level, @name, @quality, @quantity, @startedat, @league, @character, @unidentified, @ownmap, @itemrarity, @packsize, @zanamod)";
                 using (var cmd = new SQLiteCommand(addQuery, connection))
                 {
                     //cmd.Parameters.AddWithValue("mysqlid", newMap.SqlId);
@@ -115,6 +115,7 @@ namespace Cartogram.SQL
                     cmd.Parameters.AddWithValue("ownmap", newMap.OwnMap);
                     cmd.Parameters.AddWithValue("itemrarity", newMap.ItemRarity);
                     cmd.Parameters.AddWithValue("packsize", newMap.PackSize);
+                    cmd.Parameters.AddWithValue("zanamod", newMap.ZanaMod);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -158,7 +159,7 @@ namespace Cartogram.SQL
                     {
                         while (reader.Read())
                         {
-                            int id, level, quality, quantity, levelBefore, percentBefore, levelAfter, percentAfter;
+                            int id, level, quality, quantity, itemRarity, packsize, levelBefore, percentBefore, levelAfter, percentAfter;
                             //Int64 experienceBefore, experienceAfter;
                             //var expBefore = new Experience
                             //{
@@ -191,7 +192,10 @@ namespace Cartogram.SQL
                                 League = reader["league"].ToString(),
                                 Character = reader["character"].ToString(),
                                 Unidentified = reader["unidentified"].ToString() == "1",
-                                OwnMap = reader["ownmap"].ToString() == "1"
+                                OwnMap = reader["ownmap"].ToString() == "1",
+                                ItemRarity = int.TryParse(reader["item_rarity"].ToString(), out itemRarity) ? itemRarity : -1,
+                                PackSize = int.TryParse(reader["pack_size"].ToString(), out packsize) ? packsize : -1,
+                                ZanaMod = reader["zana_mod"].ToString()
                             };
                         }
                     }

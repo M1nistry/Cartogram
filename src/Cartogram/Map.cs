@@ -25,6 +25,8 @@ namespace Cartogram
         public bool OwnMap { get; set; }
         public bool Unidentified { get; set; }
 
+        public string ZanaMod { get; set; }
+
         public bool Equals(Map other)
         {
             return other.Id == Id;
@@ -46,7 +48,7 @@ namespace Cartogram
                "Cells", "Dark Forest", "Gorge", "Maze", "Underground River", "Bazaar", "Necropolis",
                "Plateau", "Crematorium", "Precinct", "Shipyard", "Shrine", "Villa", "Palace", "Pit",
                "Desert", "Aqueduct", "Quarry", "Arena", "Abyss", "Village Ruin", "Wasteland", "Excavation",
-               "Waterways", "Core", "Volcano", "Colosseum", "Orchard"
+               "Waterways", "Core", "Volcano", "Colosseum", "Orchard", "Malformation"
             };
         }
     }

@@ -386,7 +386,8 @@ namespace Cartogram
                                 if (_newMap.CurrentMap == null) _newMap = null;
                             };
                             if (_newMap.CurrentMap == null && !_newMap.IsVisible) _newMap.ShowDialog();
-                            if (_newMap.Cancelled || CurrentMap == null || CurrentMap.Id <= 0) return IntPtr.Zero;
+                            if (_newMap == null) return IntPtr.Zero;
+                            if (CurrentMap == null || CurrentMap?.Id <= 0) return IntPtr.Zero;
                             //if (publicOpt)
                             //{
                             //    _mySqlId = _mySql.AddMap(CurrentMap);
