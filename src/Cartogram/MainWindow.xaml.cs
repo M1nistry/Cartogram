@@ -5,7 +5,6 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -54,6 +53,8 @@ namespace Cartogram
 
         IntPtr _nextClipboardViewer;
         private static MainWindow _main;
+        internal NewMap _newMap;
+        private Overlay _overlay;
 
         private readonly DispatcherTimer _mapTimer;
         internal Map CurrentMap;
@@ -82,10 +83,14 @@ namespace Cartogram
             LoadSettings();
             _mapTimer.Tick += _mapTimer_Elapsed;
             LeagueObject = JsonHandler.ParseJsonObject("http://api.exiletools.com/ladder?listleagues=1");
+            ExtendedStatusStrip.AddStatus(LeagueObject == null
+                ? @"We failed to fetch the list of active leagues from: http://api.exiletools.com. You either have no internet connection or the source is no longer avaliable. Message /u/_m1nistry on reddit to look for alternatives."
+                : "Welcome back, Exile!");
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
             _state = "WAITING";
             UpdateInformation();
-            ExtendedStatusStrip.AddStatus("Welcome back, Exile!");
+            //_overlay = new Overlay();
+            //_overlay.Show();
         }
 
         public static MainWindow GetSingleton()
@@ -105,7 +110,6 @@ namespace Cartogram
 
         protected override void OnClosed(EventArgs e)
         {
-
             UnregisterHotkeys();
             if (_source == null) return;
             _source.RemoveHook(WndProc);
@@ -157,6 +161,8 @@ namespace Cartogram
             GridPacksizeColumn.Visibility = MenuHidePacksize.IsChecked ? Visibility.Hidden : Visibility.Visible;
 
             MenuTopMost.IsChecked = Settings.Default.Topmost;
+
+            MenuLockOverlay.IsChecked = Settings.Default.LockOverlay;
         }
 
         private void UpdateInformation()
@@ -330,7 +336,11 @@ namespace Cartogram
                         case (0):
                             if (_state == "DROPS")
                             {
+                                _newMap.CurrentMap = null;
+                                _newMap = null;
                                 _mapTimer.Stop();
+                                _overlay.Close();
+                                _overlay = null;
                                 CurrentMapBorder.BorderBrush = Brushes.DimGray;
                                 Experience expAfter = null;//ExpValue();
                                 Sqlite.FinishMap(CurrentMap.Id, expAfter);
@@ -370,26 +380,36 @@ namespace Cartogram
                             _state = "CARTO";
                             break;
                         case (3):
-                                var newMap = new NewMap();
-                                newMap.ShowDialog();
-                                OnSourceInitialized(new RoutedEventArgs());
-                                if (newMap.Cancelled || CurrentMap == null || CurrentMap.Id <= 0) break;
-                                //if (publicOpt)
-                                //{
-                                //    _mySqlId = _mySql.AddMap(CurrentMap);
-                                //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
-                                //}
-                                //CurrentMap.SqlId = _mySqlId;
-                                CanvasInformation.Visibility = Visibility.Hidden;
-                                CanvasCurrentMap.Visibility = Visibility.Visible;
-                                LabelMapValue.Content = CurrentMap.Name;
-                                _timerTicks = 0;
-                                _mapTimer.Start();
-                                CurrentMapBorder.BorderBrush = Brushes.Red;
-                                ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
-                                RefreshGrids();
-                                GridMaps.SelectedIndex = 0;
-                                _state = "DROPS";
+                            if (_newMap == null) _newMap = new NewMap();
+                            _newMap.Closed += delegate
+                            {
+                                if (_newMap.CurrentMap == null) _newMap = null;
+                            };
+                            if (_newMap.CurrentMap == null && !_newMap.IsVisible) _newMap.ShowDialog();
+                            if (_newMap.Cancelled || CurrentMap == null || CurrentMap.Id <= 0) return IntPtr.Zero;
+                            //if (publicOpt)
+                            //{
+                            //    _mySqlId = _mySql.AddMap(CurrentMap);
+                            //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
+                            //}
+                            //CurrentMap.SqlId = _mySqlId;
+                            OnSourceInitialized(new RoutedEventArgs());
+                            CanvasInformation.Visibility = Visibility.Hidden;
+                            CanvasCurrentMap.Visibility = Visibility.Visible;
+                            LabelMapValue.Content = CurrentMap.Name;
+                            if (_overlay == null)
+                            {
+                                _overlay = new Overlay();
+                                _overlay.Show();
+                            }
+                            _overlay.LabelCurrentMap.Content = $"Current Map: {CurrentMap.Name} | 00:00:00";
+                            _timerTicks = 0;
+                            _mapTimer.Start();
+                            CurrentMapBorder.BorderBrush = Brushes.Red;
+                            ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
+                            RefreshGrids();
+                            GridMaps.SelectedIndex = 0;
+                            _state = "DROPS";
                             break;
                     }
                     break;
@@ -444,6 +464,9 @@ namespace Cartogram
         {
             _timerTicks++;
             TimerValue.Content = $"{_timerTicks/3600:00}:{(_timerTicks/60)%60:00}:{_timerTicks%60:00}";
+            if (_overlay != null)
+                _overlay.LabelCurrentMap.Content =
+                    $"Current Map: {CurrentMap.Name} | {_timerTicks/3600:00}:{(_timerTicks/60)%60:00}:{_timerTicks%60:00}";
         }
 
         public static void SortDataGrid(System.Windows.Controls.DataGrid dataGrid, int columnIndex = 0, ListSortDirection sortDirection = ListSortDirection.Ascending)
@@ -574,5 +597,22 @@ namespace Cartogram
             Settings.Default.Save();
         }
 
+        private void MenuLockOverlay_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.LockOverlay = MenuLockOverlay.IsChecked;
+            Settings.Default.Save();
+
+            if (_overlay == null)
+            {
+                _overlay = new Overlay();
+                _overlay.Show();
+            }
+            else
+            {
+                _overlay.Close();
+                _overlay = new Overlay();
+                _overlay.Show();
+            }
+        }
     }
 }

@@ -34,6 +34,7 @@
                 <MenuItem Header="Tools">
                     <MenuItem x:Name="MenuUnidentified" Header="Unidentified Calculator" IsEnabled="False" Click="MenuUnidentified_Click"></MenuItem>
                     <MenuItem x:Name="MenuSettings" Header="Settings" Click="MenuSettings_Click"/>
+                    <MenuItem x:Name="MenuLockOverlay" Header="Lock overlay" IsCheckable="True" Click="MenuLockOverlay_Click"/>
                     <MenuItem x:Name="MenuTopMost" Header="Always on top" IsCheckable="True" Click="MenuTopMost_Click"/>
                 </MenuItem>
                 <MenuItem Header="Help">

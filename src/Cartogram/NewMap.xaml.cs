@@ -71,6 +71,7 @@ namespace Cartogram
             {
                 _source.RemoveHook(WndProc);
                 _source = null;
+                _main._newMap = null;
             }
             base.OnClosed(e);
         }
