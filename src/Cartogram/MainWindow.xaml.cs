@@ -17,8 +17,17 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Cartogram.JSON;
 using Cartogram.Properties;
+using GDataDB;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v2;
+using Google.Apis.Drive.v2.Data;
+using Google.Apis.Services;
+using Google.Apis.Util.Store;
+using OfficeOpenXml;
+using OfficeOpenXml.Table;
 using Tesseract;
 using Brushes = System.Windows.Media.Brushes;
+using File = System.IO.File;
 
 namespace Cartogram
 {
@@ -32,11 +41,11 @@ namespace Cartogram
 
         [DllImport("User32.dll")]
         protected static extern int
-        SetClipboardViewer(int hWndNewViewer);
+            SetClipboardViewer(int hWndNewViewer);
 
         [DllImport("User32.dll", CharSet = CharSet.Auto)]
         public static extern bool
-        ChangeClipboardChain(IntPtr hWndRemove, IntPtr hWndNewNext);
+            ChangeClipboardChain(IntPtr hWndRemove, IntPtr hWndNewNext);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern int SendMessage(IntPtr hwnd, int wMsg, IntPtr wParam, IntPtr lParam);
@@ -51,7 +60,7 @@ namespace Cartogram
 
         #endregion
 
-        IntPtr _nextClipboardViewer;
+        private IntPtr _nextClipboardViewer;
         private static MainWindow _main;
         internal NewMap _newMap;
         private Overlay _overlay;
@@ -103,7 +112,7 @@ namespace Cartogram
             base.OnSourceInitialized(e);
             var source = PresentationSource.FromVisual(this) as HwndSource;
             if (source != null) _handle = source.Handle;
-            _nextClipboardViewer = (IntPtr)SetClipboardViewer((int)source.Handle);
+            _nextClipboardViewer = (IntPtr) SetClipboardViewer((int) source.Handle);
             source.AddHook(WndProc);
             RegisterHotkeys();
         }
@@ -132,7 +141,8 @@ namespace Cartogram
             }
             catch (Exception Cuex)
             {
-                System.Windows.MessageBox.Show(@"Failed to register hotkeys, please close the application and try again",
+                System.Windows.MessageBox.Show(
+                    @"Failed to register hotkeys, please close the application and try again",
                     @"Failed registering hotkeys", MessageBoxButton.OK, MessageBoxImage.Error);
                 ExtendedStatusStrip.AddStatus(@"Failed registering hotkeys, please restart application.");
             }
@@ -178,7 +188,9 @@ namespace Cartogram
         /// </summary>
         private void PopulateExperience()
         {
-            var lines = File.ReadAllLines(Directory.GetCurrentDirectory() + @"\Resources\Experience.csv").Select(a => a.Split(','));
+            var lines =
+                File.ReadAllLines(Directory.GetCurrentDirectory() + @"\Resources\Experience.csv")
+                    .Select(a => a.Split(','));
             var listExp = new List<Experience>();
             foreach (var line in lines)
             {
@@ -198,7 +210,7 @@ namespace Cartogram
         private void PopulateMapInformation()
         {
             var lines = File.ReadAllLines(Directory.GetCurrentDirectory() + @"\Resources\MapInformation.csv")
-                    .Select(a => a.Split(','));
+                .Select(a => a.Split(','));
             if (Sqlite.InformationCount() == lines.Count()) return;
             var listMapInformation = lines.Select(line => new MapInformation
             {
@@ -223,6 +235,13 @@ namespace Cartogram
         {
             var dropTable = Sqlite.DropDataTable(rowId);
             GridDrops.DataContext = dropTable.DefaultView;
+            if (_overlay != null && _overlay.Visibility == Visibility.Visible)
+            {
+                var mapList = Sqlite.MapList(CurrentMap.Id);
+                var mapDrops = mapList.Aggregate("", (current, item) => current + (item.Value + ", "));
+                if (mapDrops.Length > 0) mapDrops = mapDrops.Remove(mapDrops.Length - 2, 2);
+                _overlay.LabelMapDrops.Content = @"Map Drops: " + mapDrops;
+            }
         }
 
 
@@ -294,7 +313,9 @@ namespace Cartogram
                                         //if (publicOpt && _mySqlId > 0) Sqlite.AddUnique(_mySqlId, parsedUnique);
                                     }
                                     if (clipboard.Contains("Rarity: Normal") && clipboard.Contains("Stack Size:")
-                                        && (!clipboard.Split('\n')[1].Contains("Map") || !clipboard.Split('\n')[2].Contains("Map")))
+                                        &&
+                                        (!clipboard.Split('\n')[1].Contains("Map") ||
+                                         !clipboard.Split('\n')[2].Contains("Map")))
                                     {
                                         var parsedDivcard = ParseHandler.ParseDivination();
                                         Sqlite.AddDivination(CurrentMap.Id, parsedDivcard);
@@ -304,9 +325,10 @@ namespace Cartogram
                                 }
                                 catch (Exception)
                                 {
-                                    //do nothing
+                                    System.Windows.Forms.Clipboard.SetDataObject(string.Empty, false, 5, 200);
+                                    break;
                                 }
-                                System.Windows.Clipboard.SetText("");
+                                System.Windows.Forms.Clipboard.SetDataObject(string.Empty, false, 5, 200);
                                 break;
 
                             case ("ZANA"):
@@ -322,6 +344,7 @@ namespace Cartogram
                                 break;
                         }
                     }
+                    Console.WriteLine(@"HEYHEY We're Sending Message " + msg);
                     SendMessage(_nextClipboardViewer, msg, wParam, lParam);
                     break;
 
@@ -342,7 +365,7 @@ namespace Cartogram
                                 _overlay.Close();
                                 _overlay = null;
                                 CurrentMapBorder.BorderBrush = Brushes.DimGray;
-                                Experience expAfter = null;//ExpValue();
+                                Experience expAfter = null; //ExpValue();
                                 Sqlite.FinishMap(CurrentMap.Id, expAfter);
                                 ExtendedStatusStrip.AddStatus($"Finished {CurrentMap.Name}, Gained {"0.0%"} experience.");
                                 //if (publicOpt && _mySqlId > 0) _mySql.FinishMap(_mySqlId, expAfter);
@@ -365,7 +388,8 @@ namespace Cartogram
                                 ExtendedStatusStrip.AddStatus($"Finished Zana, returning to {CurrentMap.Name} map");
                                 break;
                             }
-                            ExtendedStatusStrip.AddStatus($"Zana found, press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} to toggle back.");
+                            ExtendedStatusStrip.AddStatus(
+                                $"Zana found, press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} to toggle back.");
                             _state = "ZANA";
                             break;
 
@@ -373,10 +397,12 @@ namespace Cartogram
                             if (_state == "CARTO")
                             {
                                 _state = "DROPS";
-                                ExtendedStatusStrip.AddStatus($"Finished Cartogram, returning to {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} map");
+                                ExtendedStatusStrip.AddStatus(
+                                    $"Finished Cartogram, returning to {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} map");
                                 break;
                             }
-                            ExtendedStatusStrip.AddStatus($"Cartographer found! press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} when drops recorded.");
+                            ExtendedStatusStrip.AddStatus(
+                                $"Cartographer found! press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} when drops recorded.");
                             _state = "CARTO";
                             break;
                         case (3):
@@ -470,7 +496,8 @@ namespace Cartogram
                     $"Current Map: {CurrentMap.Name} | {_timerTicks/3600:00}:{(_timerTicks/60)%60:00}:{_timerTicks%60:00}";
         }
 
-        public static void SortDataGrid(System.Windows.Controls.DataGrid dataGrid, int columnIndex = 0, ListSortDirection sortDirection = ListSortDirection.Ascending)
+        public static void SortDataGrid(System.Windows.Controls.DataGrid dataGrid, int columnIndex = 0,
+            ListSortDirection sortDirection = ListSortDirection.Ascending)
         {
             var column = dataGrid.Columns[columnIndex];
             dataGrid.Items.SortDescriptions.Clear();
@@ -494,10 +521,10 @@ namespace Cartogram
         private void GridMaps_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (GridMaps.SelectedItems.Count <= 0) return;
-            var row = (DataRowView)GridMaps.SelectedItems[0];
+            var row = (DataRowView) GridMaps.SelectedItems[0];
             var rowId = row["id"].ToString();
             int id;
-            if (int.TryParse(rowId, out id) )RefreshDrops(id);
+            if (int.TryParse(rowId, out id)) RefreshDrops(id);
         }
 
         private void DataGrid_Documents_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
@@ -524,7 +551,7 @@ namespace Cartogram
 
         private void GridMaps_DeleteClick(object sender, RoutedEventArgs e)
         {
-            var rowStr = ((DataRowView)GridMaps.SelectedItem)?.Row.ItemArray[0];
+            var rowStr = ((DataRowView) GridMaps.SelectedItem)?.Row.ItemArray[0];
             int id;
             if (int.TryParse(rowStr?.ToString(), out id)) Sqlite.DeleteMap(id);
             RefreshGrids();
@@ -532,10 +559,13 @@ namespace Cartogram
 
         private void NewMap_OnClick(object sender, RoutedEventArgs e)
         {
-            var newMap = new NewMap();
-            newMap.ShowDialog();
-            OnSourceInitialized(e);
-            if (newMap.Cancelled || CurrentMap == null || CurrentMap.Id <= 0) return;
+            if (_newMap == null) _newMap = new NewMap();
+            _newMap.Closed += delegate
+            {
+                if (_newMap.CurrentMap == null) _newMap = null;
+            };
+            if (_newMap.CurrentMap == null && !_newMap.IsVisible) _newMap.ShowDialog();
+            if (_newMap == null) return;
             //if (publicOpt)
             //{
             //    _mySqlId = _mySql.AddMap(CurrentMap);
@@ -567,7 +597,7 @@ namespace Cartogram
 
         private void MenuItemHideColumns_Click(object sender, RoutedEventArgs e)
         {
-            switch(((System.Windows.Controls.MenuItem)e.Source).Header.ToString())
+            switch (((System.Windows.Controls.MenuItem) e.Source).Header.ToString())
             {
                 case ("Quantity"):
                     Settings.Default.HideQuantity = MenuHideQuantity.IsChecked;
@@ -586,6 +616,11 @@ namespace Cartogram
                 case ("Pack Size"):
                     Settings.Default.HidePacksize = MenuHidePacksize.IsChecked;
                     GridPacksizeColumn.Visibility = MenuHidePacksize.IsChecked ? Visibility.Hidden : Visibility.Visible;
+                    break;
+
+                case ("Zana mod"):
+                    Settings.Default.HideZana = MenuHideZanaMod.IsChecked;
+                    GridZanaModColumn.Visibility = MenuHideZanaMod.IsChecked ? Visibility.Hidden : Visibility.Visible;
                     break;
             }
             Settings.Default.Save();
@@ -615,5 +650,242 @@ namespace Cartogram
                 _overlay.Show();
             }
         }
+
+        private void MenuExport_Click(object sender, RoutedEventArgs e)
+        {
+            var fileBrowser = new SaveFileDialog
+            {
+                AddExtension = true,
+                DefaultExt = ".xlsx",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                FileName = $"Cartogram-Export[{DateTime.Now.Ticks}]",
+                Filter = @"Excel Spreadsheet|.xlsx"
+            };
+
+            fileBrowser.ShowDialog();
+
+            var filePath = fileBrowser.FileName;
+            if (filePath == string.Empty) return;
+
+            var newFile = new FileInfo(filePath);
+            using (var pck = new ExcelPackage(newFile))
+            {
+
+
+                //TODO Head Page
+                //var ws = pck.Workbook.Worksheets.Add("Map Export");
+                //ws.Cells["A1"].LoadFromDataTable(Sqlite.MapDataTable(), true, TableStyles.Medium10);
+                //ws.Cells.AutoFitColumns();
+
+                foreach (var dt in Sqlite.DropTables())
+                {
+                    var wsDrops = pck.Workbook.Worksheets.Add(dt.TableName);
+                    wsDrops.Cells["A1"].LoadFromDataTable(dt, true, TableStyles.Medium10);
+                    wsDrops.Cells.AutoFitColumns();
+                }
+
+                pck.Save();
+            }
+            ExtendedStatusStrip.AddStatus(@"Exported successfully!");
+        }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            //var client = new DatabaseClient(clientEmail: "888775419943-82kcvk4sok1ggt8mkv6uatjcc3vhr8lk@developer.gserviceaccount.com", privateKey: File.ReadAllBytes(@"gauth.p12"));
+            //IDatabase db = client.GetDatabase("Good Music") ?? client.CreateDatabase("Good Music");
+            //ITable<Map> table = db.GetTable<Map>("Good Music") ?? db.CreateTable<Map>("Good Music");
+            //table.Add(Sqlite.GetMap(60));
+
+            string[] Scopes = {DriveService.Scope.DriveReadonly};
+            string ApplicationName = "Drive API .NET Quickstart";
+            UserCredential credential;
+
+            using (var stream = new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
+            {
+                string credPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+                credPath = Path.Combine(credPath, ".credentials/drive-dotnet-quickstart");
+
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    Scopes,
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore(credPath, true)).Result;
+                Console.WriteLine("Credential file saved to: " + credPath);
+            }
+
+            // Create Drive API service.
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = ApplicationName,
+            });
+
+            // Define parameters of request.
+            FilesResource.ListRequest listRequest = service.Files.List();
+            listRequest.MaxResults = 10;
+
+            // List files.
+            IList<Google.Apis.Drive.v2.Data.File> files = listRequest.Execute()
+                .Items;
+            //Console.WriteLine("Files:");
+            //if (files != null && files.Count > 0)
+            //{
+            //    foreach (var file in files)
+            //    {
+            //        Console.WriteLine("{0} ({1})", file.Title, file.Id);
+            //    }
+            //}
+            //else
+            //{
+            //    Console.WriteLine("No files found.");
+            //}
+
+            //Create file
+            var result = uploadFile(service, "C:\\Users\\M1nistry\\Documents\\test.txt", files[0].Parents[0].Id);
+            Console.WriteLine(result.Id);
+        }
+
+        //private static Google.Apis.Drive.v2.Data.File insertFile(DriveService service, String title, String description, String parentId, String mimeType, String filename)
+        //{
+
+        //    var fileUpload = @"C:\Users\M1nistry\Documents\Cartogram-Export[635798511721400030].xlsx";
+        //    var googleFile = new Google.Apis.Drive.v2.Data.File
+        //    {
+        //        Title = "Cartogram-Test",
+        //        Description = "This is just a test, Hello World!",
+        //        MimeType = GetMimeType(fileUpload, false)
+        //    };
+        //    //Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+        //    //Nullable<bool> result = dlg.ShowDialog();
+
+        //    if (!String.IsNullOrEmpty(parentId))
+        //    {
+        //        googleFile.Parents = new List<ParentReference>()
+        //        {new ParentReference() {Id = parentId}};
+        //    }
+        //    // Get the selected file name and display in a TextBox 
+        //    //if (result != true) return null;
+
+        //        // File's content.
+        //    //var body = File.Open(dlg.FileName, FileMode.OpenOrCreate);
+        //        byte[] byteArray = System.IO.File.ReadAllBytes(fileUpload);
+        //    MemoryStream stream = new MemoryStream(byteArray);
+        //    try
+        //    {
+        //        FilesResource.InsertMediaUpload request = service.Files.Insert(googleFile, stream, GetMimeType(fileUpload, false));
+        //        request.Convert = true;
+        //        request.Upload();
+
+        //        Google.Apis.Drive.v2.Data.File file = request.ResponseBody;
+
+        //        // Uncomment the following line to print the File ID.
+        //        // Console.WriteLine("File ID: " + file.Id);
+
+        //        return file;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine("An error occurred: " + e.Message);
+        //        return null;
+        //    }
+        //}
+
+        /// <summary>
+        /// Uploads a file
+        /// Documentation: https://developers.google.com/drive/v2/reference/files/insert
+        /// </summary>
+        /// <param name="_service">a Valid authenticated DriveService</param>
+        /// <param name="_uploadFile">path to the file to upload</param>
+        /// <param name="_parent">Collection of parent folders which contain this file. 
+        ///                       Setting this field will put the file in all of the provided folders. root folder.</param>
+        /// <returns>If upload succeeded returns the File resource of the uploaded file 
+        ///          If the upload fails returns null</returns>
+        public static Google.Apis.Drive.v2.Data.File uploadFile(DriveService _service, string _uploadFile, string _parent)
+        {
+
+            if (System.IO.File.Exists(_uploadFile))
+            {
+                Google.Apis.Drive.v2.Data.File body = new Google.Apis.Drive.v2.Data.File();
+                body.Title = System.IO.Path.GetFileName(_uploadFile);
+                body.Description = "File uploaded by Diamto Drive Sample";
+                body.MimeType = GetMimeType(_uploadFile);
+                body.Parents = new List<ParentReference>() { new ParentReference() { Id = _parent } };
+
+                // File's content.
+                byte[] byteArray = System.IO.File.ReadAllBytes(_uploadFile);
+                System.IO.MemoryStream stream = new System.IO.MemoryStream(byteArray);
+                try
+                {
+                    FilesResource.InsertMediaUpload request = _service.Files.Insert(body, stream, GetMimeType(_uploadFile));
+                    //request.Convert = true;
+                    request.Upload();
+                    return request.ResponseBody;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("An error occurred: " + e.Message);
+                    return null;
+                }
+            }
+            else
+            {
+                Console.WriteLine("File does not exist: " + _uploadFile);
+                return null;
+            }
+
+        }
+
+        private static string GetMimeType(string fileName)
+        {
+            string mimeType = "application/unknown";
+            string ext = System.IO.Path.GetExtension(fileName).ToLower();
+            Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
+            if (regKey != null && regKey.GetValue("Content Type") != null)
+                mimeType = regKey.GetValue("Content Type").ToString();
+            return mimeType;
+        }
+
+        private static string GetMimeType(string fileName, bool ignoreExtension = true)
+        {
+            string mimeType = "application/unknown";
+            string ext = System.IO.Path.GetExtension(fileName).ToLower();
+
+            if (ignoreExtension == false)
+            {
+                switch (ext)
+                {
+                    case ".ppt":
+                    case ".pptx":
+                        mimeType = "application/vnd.google-apps.presentation";
+                        break;
+                    case ".xls":
+                    case ".xlsx":
+                        mimeType = "application/vnd.google-apps.spreadsheet";
+                        break;
+                    case ".doc":
+                    case ".docx":
+                        mimeType = "application/vnd.google-apps.document";
+                        break;
+                    default:
+                        Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
+                        if (regKey != null && regKey.GetValue("Content Type") != null)
+                            mimeType = regKey.GetValue("Content Type").ToString();
+                        break;
+                }
+            }
+            else
+            {
+                Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
+                if (regKey != null && regKey.GetValue("Content Type") != null)
+                    mimeType = regKey.GetValue("Content Type").ToString();
+            }
+
+
+            return mimeType;
+        }
+
+        //...
     }
+
 }

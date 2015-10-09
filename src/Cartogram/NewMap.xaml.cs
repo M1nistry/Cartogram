@@ -9,7 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
-using Cartogram.JSON;
 using Cartogram.Properties;
 using Cartogram.SQL;
 using MessageBox = System.Windows.MessageBox;
@@ -159,12 +158,13 @@ namespace Cartogram
 
 
             CurrentMap.Quantity = CurrentMap.Quantity;
-            if (ComboZanaMod.SelectionBoxItem != null)
+            if (ComboZanaMod.SelectionBoxItem != null && ComboZanaMod.SelectionBoxItem.ToString().Length > 1)
             {
                 CurrentMap.ZanaMod = ComboZanaMod.SelectionBoxItem.ToString();
             }
             else
             {
+                CurrentMap.ZanaMod = string.Empty;
                 CurrentMap.Quantity += Settings.Default.ZanaQuantity;
             }
             CurrentMap.OwnMap = radioButtonOwn.IsChecked == true;
@@ -196,6 +196,7 @@ namespace Cartogram
 
         private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {
+            CurrentMap = null;
             Cancelled = true;
             Close();
         }
@@ -281,8 +282,8 @@ namespace Cartogram
         {
             var growAnimation = new DoubleAnimation
             {
-                From = 140,
-                To = 290,
+                From = 160,
+                To = 310,
                 FillBehavior = FillBehavior.Stop,
                 BeginTime = TimeSpan.FromSeconds(0.1),
                 Duration = TimeSpan.FromSeconds(0.2)
@@ -301,8 +302,8 @@ namespace Cartogram
         {
             var shrinkAnimation = new DoubleAnimation
             {
-                From = 290,
-                To = 140,
+                From = 310,
+                To = 160,
                 FillBehavior = FillBehavior.Stop,
                 BeginTime = TimeSpan.FromSeconds(0.1),
                 Duration = TimeSpan.FromSeconds(0.2)

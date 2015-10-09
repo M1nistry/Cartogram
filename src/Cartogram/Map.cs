@@ -45,10 +45,10 @@ namespace Cartogram
                "Promenade","Shore","Spider Forest","Tunnel","Bog", "Coves", "Graveyard", "Pier",
                "Underground Sea","Arachnid Nest","Colonnade", "Dry Woods", "Strand", "Temple",
                "Jungle Valley", "Torture Chamber", "Waste Pool", "Mine", "Dry Peninsula", "Canyon",
-               "Cells", "Dark Forest", "Gorge", "Maze", "Underground River", "Bazaar", "Necropolis",
+               "Cells", "Dark Forest", "Gorge", "Conservatory", "Underground River", "Bazaar", "Necropolis",
                "Plateau", "Crematorium", "Precinct", "Shipyard", "Shrine", "Villa", "Palace", "Pit",
                "Desert", "Aqueduct", "Quarry", "Arena", "Abyss", "Village Ruin", "Wasteland", "Excavation",
-               "Waterways", "Core", "Volcano", "Colosseum", "Orchard", "Malformation"
+               "Waterways", "Core", "Volcano", "Colosseum", "Orchard", "Malformation", "Terrace", "Residence"
             };
         }
     }

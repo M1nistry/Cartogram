@@ -16,7 +16,9 @@
                 <ColumnDefinition Width="80"/>
             </Grid.ColumnDefinitions>
             <Label x:Name="LabelCurrentMap" Content="Current Map:" Grid.Row="0" Grid.Column="0" Margin="5,5,0,0" Foreground="White"/>
-            <Button x:Name="ButtonNotification" Grid.RowSpan="2" Grid.Row="0" Grid.Column="1" Margin="10,10" Click="ButtonNotification_Click"/>
+            <Button x:Name="ButtonNotification" Grid.RowSpan="2" Grid.Row="0" Grid.Column="1" Margin="10,10" Visibility="Hidden" Click="ButtonNotification_Click"/>
+            <Label x:Name="LabelMapDrops" Content="Map Drops:" Grid.Row="1" Grid.Column="0" Margin="5,0,0,0" Foreground="White"/>
+            
             <Popup Name="PopupWindow"
                Placement="Mouse"
                IsOpen="False"

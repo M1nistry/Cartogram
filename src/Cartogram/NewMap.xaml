@@ -65,6 +65,7 @@
             <Label x:Name="ZanaMod" Content="Zana Mod: " Height="25" Canvas.Left ="221" Canvas.Top="40"/>
             <ComboBox x:Name="ComboZanaMod" Width="120" Canvas.Left="294" Canvas.Top="41" Height="24">
                <ComboBox.Items>
+                    <ComboBoxItem Content=" "/>
                     <ComboBoxItem Content="Ambush"/>
                     <ComboBoxItem Content="Anarchy"/>
                     <ComboBoxItem Content="Beyond"/>

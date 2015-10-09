@@ -44,7 +44,7 @@ namespace Cartogram.SQL
                     {
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `maps` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `mysql_id` INTEGER DEFAULT 0, `rarity` TEXT, `level` INTEGER, `name` TEXT, 
                                             `quality` INTEGER, `quantity` INTEGER, `started_at` DATETIME, `finished_at` DATETIME, `notes` TEXT, `league` TEXT, `character` TEXT, `unidentified` INTEGER NOT NULL,
-                                            `ownmap` INTEGER NOT NULL, `item_rarity` INTEGER NOT NULL, `pack_size` INTEGER NOT NULL, `zana_mod` TEXT);";
+                                            `ownmap` INTEGER NOT NULL, `item_rarity` INTEGER NOT NULL, `pack_size` INTEGER NOT NULL, `zana_mod` TEXT NOT NULL);";
                         cmd.ExecuteNonQuery();
 
                         cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `affixes` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `map_id` INTEGER, `affix` TEXT);";
@@ -212,6 +212,7 @@ namespace Cartogram.SQL
             dtMaps.Columns.Add("level");
             dtMaps.Columns.Add("name");
             dtMaps.Columns.Add("gained", typeof(float));
+            dtMaps.Columns.Add("zana_mod");
             dtMaps.Columns.Add("rarity");
             dtMaps.Columns.Add("quality");
             dtMaps.Columns.Add("quantity");
@@ -235,8 +236,9 @@ namespace Cartogram.SQL
                             {
                                 var mapId = int.Parse(reader["id"].ToString());
                                 var sqlId = int.Parse(reader["mysql_id"].ToString());
+                                var zanaMod = reader["zana_mod"].ToString();
                                 dtMaps.Rows.Add(mapId, sqlId, int.Parse(reader["level"].ToString()),
-                                    reader["name"].ToString(), $"{ExpGained(mapId):N2}",
+                                    reader["name"].ToString(), $"{ExpGained(mapId):N2}", zanaMod.Length > 0 ? zanaMod.Remove(3, zanaMod.Length-3) : string.Empty,
                                     reader.GetString(2), int.Parse(reader["quality"].ToString()),
                                     int.Parse(reader["quantity"].ToString()), int.Parse(reader["item_rarity"].ToString()),
                                     int.Parse(reader["pack_size"].ToString()), MapDrops(mapId, "<",""), MapDrops(mapId, "=",""), 
@@ -333,6 +335,56 @@ namespace Cartogram.SQL
                 return null;
             }
         }
+
+        public static List<DataTable> DropTables()
+        {
+            var listTables = new List<DataTable>();
+
+            using (var connection = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string mapsRunQuery = @"SELECT * FROM `maps`";
+                const string mapQuery = @"SELECT map_id, rarity, level, name, zana, carto FROM `map_drops`;";
+                const string uniqueQuery = @"SELECT map_id, name FROM `unique_drops`;";
+                const string currencyQuery = @"SELECT map_id, name, count FROM `currency_drops`;";
+                const string divinationQuery = @"SELECT map_id, name, count FROM `divination_drops`;";
+
+                using (var da = new SQLiteDataAdapter(mapsRunQuery, connection))
+                {
+                    var runDt = new DataTable("mapsRun");
+                    da.Fill(runDt);
+                    if (runDt.Rows.Count > 0) listTables.Add(runDt);
+                }
+
+                using (var da = new SQLiteDataAdapter(mapQuery, connection))
+                {
+                    var mapDt = new DataTable("mapTable");
+                    da.Fill(mapDt);
+                    if (mapDt.Rows.Count > 0) listTables.Add(mapDt);
+                }
+
+                using (var da = new SQLiteDataAdapter(uniqueQuery, connection))
+                {
+                    var uniqueDt = new DataTable("uniqueTable");
+                    da.Fill(uniqueDt);
+                    if (uniqueDt.Rows.Count > 0) listTables.Add(uniqueDt);
+                }
+
+                using (var da = new SQLiteDataAdapter(currencyQuery, connection))
+                {
+                    var currencyDt = new DataTable("currencyTable");
+                    da.Fill(currencyDt);
+                    if (currencyDt.Rows.Count > 0) listTables.Add(currencyDt);
+                }
+
+                using (var da = new SQLiteDataAdapter(divinationQuery, connection))
+                {
+                    var divDt = new DataTable("divTable");
+                    da.Fill(divDt);
+                    if (divDt.Rows.Count > 0) listTables.Add(divDt);
+                }
+            }
+            return listTables;
+        } 
 
         public static void AddDrop(Map newMap, int mapId, int zana = 0, int carto = 0)
         {

@@ -34,6 +34,7 @@
                 <MenuItem Header="Tools">
                     <MenuItem x:Name="MenuUnidentified" Header="Unidentified Calculator" IsEnabled="False" Click="MenuUnidentified_Click"></MenuItem>
                     <MenuItem x:Name="MenuSettings" Header="Settings" Click="MenuSettings_Click"/>
+                    <MenuItem x:Name="MenuExport" Header="Export" Click="MenuExport_Click"/>
                     <MenuItem x:Name="MenuLockOverlay" Header="Lock overlay" IsCheckable="True" Click="MenuLockOverlay_Click"/>
                     <MenuItem x:Name="MenuTopMost" Header="Always on top" IsCheckable="True" Click="MenuTopMost_Click"/>
                 </MenuItem>
@@ -42,6 +43,7 @@
                     <MenuItem Header="About"/>
                 </MenuItem>
             </Menu>
+            <Button x:Name="button" Content="Button" Canvas.Left="336" Canvas.Top="33" Width="75" Click="button_Click"/>
         </Canvas>
         <DockPanel Grid.Row="1" Background="#FFF1EDED" >
             <DataGrid x:Name="GridMaps" ItemsSource="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,5" AutoGenerateColumns="False" MinWidth="422" VerticalScrollBarVisibility="Hidden" Background="White" FontSize="11" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" SelectionChanged="GridMaps_SelectionChanged" IsReadOnly="True" ColumnHeaderHeight="22" AlternatingRowBackground="#BFE3E3E3" RowHeight="17">
@@ -115,7 +117,8 @@
                         </DataGridTextColumn.ElementStyle>-->
                     </DataGridTextColumn>
                     <DataGridTextColumn Binding="{Binding gained}" ClipboardContentBinding="{x:Null}" Header="Exp %" Width="45"/>
-                    <DataGridTextColumn Binding="{Binding level}" ClipboardContentBinding="{x:Null}" Header="Level" Width="36"/>
+                    <DataGridTextColumn Binding="{Binding level}" ClipboardContentBinding="{x:Null}" Header="Tier" Width="36"/>
+                    <DataGridTextColumn Binding="{Binding zana_mod}" ClipboardContentBinding="{x:Null}" Header="Zana" x:Name="GridZanaModColumn"/>
                     <DataGridTextColumn Binding="{Binding quantity}" ClipboardContentBinding="{x:Null}" Header="Quantity" x:Name="GridQuantityColumn"/>
                     <DataGridTextColumn Binding="{Binding quality}" ClipboardContentBinding="{x:Null}" Header="Quality" x:Name="GridQualityColumn" CellStyle="{StaticResource CellQuality}"/>
                     <DataGridTextColumn Binding="{Binding itemrarity}" ClipboardContentBinding="{x:Null}" Header="Rarity" x:Name="GridRarityColumn"/>
@@ -131,6 +134,7 @@
                         <MenuItem Header="Delete" Click="GridMaps_DeleteClick"/>
                         <Separator/>
                         <MenuItem Header="Hide Columns">
+                            <MenuItem x:Name="MenuHideZanaMod" Header="Zana mod" IsCheckable="True" Click="MenuItemHideColumns_Click"></MenuItem>
                             <MenuItem x:Name="MenuHideQuantity" Header="Quantity" IsCheckable="True" Click="MenuItemHideColumns_Click"/>
                             <MenuItem x:Name="MenuHideQuality" Header="Quality" IsCheckable="True" Click="MenuItemHideColumns_Click"/>
                             <MenuItem x:Name="MenuHideRarity" Header="Rarity" IsCheckable="True" Click="MenuItemHideColumns_Click"/>

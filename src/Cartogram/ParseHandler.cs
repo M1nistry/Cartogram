@@ -14,8 +14,12 @@ namespace Cartogram
         /// <returns> TRUE if it contains 'Rarity:' on the first line </returns>
         internal static bool CheckClipboard()
         {
-            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text).Replace("\r", "").Split('\n');
-            return clipboardContents.Length != -1 && clipboardContents[0].StartsWith("Rarity:");
+            if (!System.Windows.Clipboard.ContainsText(System.Windows.TextDataFormat.Text)) return false;
+
+            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
+            if (clipboardContents.Length <= 0) return false;
+            var splitClipboard = clipboardContents.Replace("\r", "").Split('\n');
+            return clipboardContents.Length != -1 && splitClipboard[0].StartsWith("Rarity:");
         }
 
         /// <summary>
@@ -34,7 +38,7 @@ namespace Cartogram
                 newMap = new Map
                 {
                     Rarity = clipboardContents[0].Replace("Rarity: ", ""),
-                    Level = int.Parse(clipboardContents[3].Replace("Map Level:", "")),
+                    Level = int.Parse(clipboardContents[3].Replace("Map Tier: ", "")),
                     Name = MapName(clipboardContents[1]),
                     Affixes = GetAffixes(clipboardContents),
                 };
@@ -77,7 +81,7 @@ namespace Cartogram
                 newMap = new Map
                 {
                     Rarity = clipboardContents[0].Replace("Rarity: ", ""),
-                    Level = int.Parse(clipboardContents[4 - i].Replace("Map Level:", "")),
+                    Level = int.Parse(clipboardContents[4 - i].Replace("Map Tier: ", "")),
                     Affixes = GetAffixes(clipboardContents),
                 };
                 newMap.Name = newMap.Rarity == "Rare" ? MapName(clipboardContents[2 - i]) : MapName(clipboardContents[1]);

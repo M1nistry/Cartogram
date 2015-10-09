@@ -214,5 +214,17 @@ namespace Cartogram.Properties {
                 this["OverlayOpacity"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HideZana {
+            get {
+                return ((bool)(this["HideZana"]));
+            }
+            set {
+                this["HideZana"] = value;
+            }
+        }
     }
 }
