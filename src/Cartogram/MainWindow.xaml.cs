@@ -696,13 +696,13 @@ namespace Cartogram
             //ITable<Map> table = db.GetTable<Map>("Good Music") ?? db.CreateTable<Map>("Good Music");
             //table.Add(Sqlite.GetMap(60));
 
-            string[] Scopes = {DriveService.Scope.DriveReadonly};
+            string[] Scopes = {DriveService.Scope.Drive};
             string ApplicationName = "Drive API .NET Quickstart";
             UserCredential credential;
 
             using (var stream = new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
             {
-                string credPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+                string credPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
                 credPath = Path.Combine(credPath, ".credentials/drive-dotnet-quickstart");
 
                 credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
@@ -721,13 +721,27 @@ namespace Cartogram
                 ApplicationName = ApplicationName,
             });
 
-            // Define parameters of request.
-            FilesResource.ListRequest listRequest = service.Files.List();
-            listRequest.MaxResults = 10;
+            string Q = "title = 'DiamtoSample' and mimeType = 'application/vnd.google-apps.folder'";
+            IList<Google.Apis.Drive.v2.Data.File> _Files = DaimtoGoogleDriveHelper.GetFiles(service, Q);
 
-            // List files.
-            IList<Google.Apis.Drive.v2.Data.File> files = listRequest.Execute()
-                .Items;
+            foreach (var item in _Files)
+            {
+                Console.WriteLine(item.Title + " " + item.MimeType);
+            }
+
+            // If there isn't a directory with this name lets create one.
+            if (_Files.Count == 0)
+            {
+                _Files.Add(DaimtoGoogleDriveHelper.createDirectory(service, "Cartogram", "Cartogram Reporting", "root"));
+            }
+
+            // Define parameters of request.
+            //FilesResource.ListRequest listRequest = service.Files.List();
+            //listRequest.MaxResults = 10;
+
+            //// List files.
+            //IList<Google.Apis.Drive.v2.Data.File> files = listRequest.Execute()
+            //    .Items;
             //Console.WriteLine("Files:");
             //if (files != null && files.Count > 0)
             //{
@@ -742,8 +756,26 @@ namespace Cartogram
             //}
 
             //Create file
-            var result = uploadFile(service, "C:\\Users\\M1nistry\\Documents\\test.txt", files[0].Parents[0].Id);
-            Console.WriteLine(result.Id);
+
+            //Google.Apis.Drive.v2.Data.File body = new Google.Apis.Drive.v2.Data.File();
+            //body.Title = "My document";
+            //body.Description = "A test document";
+            //body.MimeType = "text/plain";
+
+            //byte[] byteArray = System.IO.File.ReadAllBytes("C:\\names.txt");
+            //System.IO.MemoryStream mstream = new System.IO.MemoryStream(byteArray);
+
+            //FilesResource.InsertMediaUpload request = service.Files.Insert(body, mstream, "text/plain");
+            //request.Upload();
+
+            //var file = request.ResponseBody;
+            //Console.WriteLine("File id: " + file.Id);
+            //Console.ReadLine();
+
+
+
+
+            //var result = uploadFile(service, @"\\hightower\users$\bcpalm\My Documents\Gumshoe\Gumshoe-BulkFault-PuDos(130868485818206464).csv", "");
         }
 
         //private static Google.Apis.Drive.v2.Data.File insertFile(DriveService service, String title, String description, String parentId, String mimeType, String filename)
@@ -809,16 +841,17 @@ namespace Cartogram
                 Google.Apis.Drive.v2.Data.File body = new Google.Apis.Drive.v2.Data.File();
                 body.Title = System.IO.Path.GetFileName(_uploadFile);
                 body.Description = "File uploaded by Diamto Drive Sample";
-                body.MimeType = GetMimeType(_uploadFile);
-                body.Parents = new List<ParentReference>() { new ParentReference() { Id = _parent } };
+                //body.MimeType = GetMimeType(_uploadFile);
+                body.MimeType = "text/csv";
+                //body.Parents = new List<ParentReference>() { new ParentReference() { Id = _parent } };
 
                 // File's content.
                 byte[] byteArray = System.IO.File.ReadAllBytes(_uploadFile);
                 System.IO.MemoryStream stream = new System.IO.MemoryStream(byteArray);
                 try
                 {
-                    FilesResource.InsertMediaUpload request = _service.Files.Insert(body, stream, GetMimeType(_uploadFile));
-                    //request.Convert = true;
+                    FilesResource.InsertMediaUpload request = _service.Files.Insert(body, stream, "text/csv");
+                    request.Convert = true;
                     request.Upload();
                     return request.ResponseBody;
                 }
