@@ -34,7 +34,10 @@
                 <MenuItem Header="Tools">
                     <MenuItem x:Name="MenuUnidentified" Header="Unidentified Calculator" IsEnabled="False" Click="MenuUnidentified_Click"></MenuItem>
                     <MenuItem x:Name="MenuSettings" Header="Settings" Click="MenuSettings_Click"/>
-                    <MenuItem x:Name="MenuExport" Header="Export" Click="MenuExport_Click"/>
+                    <MenuItem x:Name="MenuExport" Header="Export">
+                        <MenuItem x:Name="MenuExportExcel" Header="Excel" Click="MenuExport_Click"/>
+                        <MenuItem x:Name="MenuExportDrive" Header="Google Drive" Click="MenuExportDrive_Click"/>
+                    </MenuItem>
                     <MenuItem x:Name="MenuLockOverlay" Header="Lock overlay" IsCheckable="True" Click="MenuLockOverlay_Click"/>
                     <MenuItem x:Name="MenuTopMost" Header="Always on top" IsCheckable="True" Click="MenuTopMost_Click"/>
                 </MenuItem>
@@ -43,7 +46,6 @@
                     <MenuItem Header="About"/>
                 </MenuItem>
             </Menu>
-            <Button x:Name="button" Content="Button" Canvas.Left="336" Canvas.Top="33" Width="75" Click="button_Click"/>
         </Canvas>
         <DockPanel Grid.Row="1" Background="#FFF1EDED" >
             <DataGrid x:Name="GridMaps" ItemsSource="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,5" AutoGenerateColumns="False" MinWidth="422" VerticalScrollBarVisibility="Hidden" Background="White" FontSize="11" HorizontalGridLinesBrush="#BFE3E3E3" VerticalGridLinesBrush="#BFE3E3E3" SelectionChanged="GridMaps_SelectionChanged" IsReadOnly="True" ColumnHeaderHeight="22" AlternatingRowBackground="#BFE3E3E3" RowHeight="17">

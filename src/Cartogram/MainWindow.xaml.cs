@@ -666,12 +666,16 @@ namespace Cartogram
 
             var filePath = fileBrowser.FileName;
             if (filePath == string.Empty) return;
+            if (ExportExcel(filePath) == filePath) ExtendedStatusStrip.AddStatus(@"Exported successfully!");
+        }
 
+        private static string ExportExcel(string savePath = "")
+        {
+            var filePath = savePath;
+            if (filePath == string.Empty) filePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + $"\\Cartogram\\Cartogram-Export[{DateTime.Now.Ticks}].xlsx";
             var newFile = new FileInfo(filePath);
             using (var pck = new ExcelPackage(newFile))
             {
-
-
                 //TODO Head Page
                 //var ws = pck.Workbook.Worksheets.Add("Map Export");
                 //ws.Cells["A1"].LoadFromDataTable(Sqlite.MapDataTable(), true, TableStyles.Medium10);
@@ -683,242 +687,68 @@ namespace Cartogram
                     wsDrops.Cells["A1"].LoadFromDataTable(dt, true, TableStyles.Medium10);
                     wsDrops.Cells.AutoFitColumns();
                 }
+                pck.Workbook.Worksheets["mapsRun"].Column(8).Style.Numberformat.Format = "d/mm/yyyy hh:mm:ss";
+                pck.Workbook.Worksheets["mapsRun"].Column(9).Style.Numberformat.Format = "d/mm/yyyy hh:mm:ss";
+                pck.Workbook.Worksheets["mapsRun"].Cells.AutoFitColumns();
 
                 pck.Save();
+                return filePath;
             }
-            ExtendedStatusStrip.AddStatus(@"Exported successfully!");
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void MenuExportDrive_Click(object sender, RoutedEventArgs e)
         {
-            //var client = new DatabaseClient(clientEmail: "888775419943-82kcvk4sok1ggt8mkv6uatjcc3vhr8lk@developer.gserviceaccount.com", privateKey: File.ReadAllBytes(@"gauth.p12"));
-            //IDatabase db = client.GetDatabase("Good Music") ?? client.CreateDatabase("Good Music");
-            //ITable<Map> table = db.GetTable<Map>("Good Music") ?? db.CreateTable<Map>("Good Music");
-            //table.Add(Sqlite.GetMap(60));
-
-            string[] Scopes = {DriveService.Scope.Drive};
-            string ApplicationName = "Drive API .NET Quickstart";
+            string[] scopes = { DriveService.Scope.DriveFile };
+            const string applicationName = "Cartogram";
             UserCredential credential;
 
             using (var stream = new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
             {
-                string credPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-                credPath = Path.Combine(credPath, ".credentials/drive-dotnet-quickstart");
+                var credPath = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram";
+                credPath = Path.Combine(credPath, ".credentials/google-drive");
 
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
-                Console.WriteLine("Credential file saved to: " + credPath);
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(GoogleClientSecrets.Load(stream).Secrets, scopes, "user", CancellationToken.None, new FileDataStore(credPath, true)).Result;
             }
 
             // Create Drive API service.
             var service = new DriveService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
-                ApplicationName = ApplicationName,
+                ApplicationName = applicationName,
             });
 
-            string Q = "title = 'DiamtoSample' and mimeType = 'application/vnd.google-apps.folder'";
-            IList<Google.Apis.Drive.v2.Data.File> _Files = DaimtoGoogleDriveHelper.GetFiles(service, Q);
+            const string query = "title = 'Cartogram' and mimeType = 'application/vnd.google-apps.folder'";
+            var files = DaimtoGoogleDriveHelper.GetFiles(service, query);
 
-            foreach (var item in _Files)
+            if (files.Count == 0)
             {
-                Console.WriteLine(item.Title + " " + item.MimeType);
-            }
-
-            // If there isn't a directory with this name lets create one.
-            if (_Files.Count == 0)
-            {
-                _Files.Add(DaimtoGoogleDriveHelper.createDirectory(service, "Cartogram", "Cartogram Reporting", "root"));
-            }
-
-            // Define parameters of request.
-            //FilesResource.ListRequest listRequest = service.Files.List();
-            //listRequest.MaxResults = 10;
-
-            //// List files.
-            //IList<Google.Apis.Drive.v2.Data.File> files = listRequest.Execute()
-            //    .Items;
-            //Console.WriteLine("Files:");
-            //if (files != null && files.Count > 0)
-            //{
-            //    foreach (var file in files)
-            //    {
-            //        Console.WriteLine("{0} ({1})", file.Title, file.Id);
-            //    }
-            //}
-            //else
-            //{
-            //    Console.WriteLine("No files found.");
-            //}
-
-            //Create file
-
-            //Google.Apis.Drive.v2.Data.File body = new Google.Apis.Drive.v2.Data.File();
-            //body.Title = "My document";
-            //body.Description = "A test document";
-            //body.MimeType = "text/plain";
-
-            //byte[] byteArray = System.IO.File.ReadAllBytes("C:\\names.txt");
-            //System.IO.MemoryStream mstream = new System.IO.MemoryStream(byteArray);
-
-            //FilesResource.InsertMediaUpload request = service.Files.Insert(body, mstream, "text/plain");
-            //request.Upload();
-
-            //var file = request.ResponseBody;
-            //Console.WriteLine("File id: " + file.Id);
-            //Console.ReadLine();
-
-
-
-
-            //var result = uploadFile(service, @"\\hightower\users$\bcpalm\My Documents\Gumshoe\Gumshoe-BulkFault-PuDos(130868485818206464).csv", "");
-        }
-
-        //private static Google.Apis.Drive.v2.Data.File insertFile(DriveService service, String title, String description, String parentId, String mimeType, String filename)
-        //{
-
-        //    var fileUpload = @"C:\Users\M1nistry\Documents\Cartogram-Export[635798511721400030].xlsx";
-        //    var googleFile = new Google.Apis.Drive.v2.Data.File
-        //    {
-        //        Title = "Cartogram-Test",
-        //        Description = "This is just a test, Hello World!",
-        //        MimeType = GetMimeType(fileUpload, false)
-        //    };
-        //    //Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-        //    //Nullable<bool> result = dlg.ShowDialog();
-
-        //    if (!String.IsNullOrEmpty(parentId))
-        //    {
-        //        googleFile.Parents = new List<ParentReference>()
-        //        {new ParentReference() {Id = parentId}};
-        //    }
-        //    // Get the selected file name and display in a TextBox 
-        //    //if (result != true) return null;
-
-        //        // File's content.
-        //    //var body = File.Open(dlg.FileName, FileMode.OpenOrCreate);
-        //        byte[] byteArray = System.IO.File.ReadAllBytes(fileUpload);
-        //    MemoryStream stream = new MemoryStream(byteArray);
-        //    try
-        //    {
-        //        FilesResource.InsertMediaUpload request = service.Files.Insert(googleFile, stream, GetMimeType(fileUpload, false));
-        //        request.Convert = true;
-        //        request.Upload();
-
-        //        Google.Apis.Drive.v2.Data.File file = request.ResponseBody;
-
-        //        // Uncomment the following line to print the File ID.
-        //        // Console.WriteLine("File ID: " + file.Id);
-
-        //        return file;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine("An error occurred: " + e.Message);
-        //        return null;
-        //    }
-        //}
-
-        /// <summary>
-        /// Uploads a file
-        /// Documentation: https://developers.google.com/drive/v2/reference/files/insert
-        /// </summary>
-        /// <param name="_service">a Valid authenticated DriveService</param>
-        /// <param name="_uploadFile">path to the file to upload</param>
-        /// <param name="_parent">Collection of parent folders which contain this file. 
-        ///                       Setting this field will put the file in all of the provided folders. root folder.</param>
-        /// <returns>If upload succeeded returns the File resource of the uploaded file 
-        ///          If the upload fails returns null</returns>
-        public static Google.Apis.Drive.v2.Data.File uploadFile(DriveService _service, string _uploadFile, string _parent)
-        {
-
-            if (System.IO.File.Exists(_uploadFile))
-            {
-                Google.Apis.Drive.v2.Data.File body = new Google.Apis.Drive.v2.Data.File();
-                body.Title = System.IO.Path.GetFileName(_uploadFile);
-                body.Description = "File uploaded by Diamto Drive Sample";
-                //body.MimeType = GetMimeType(_uploadFile);
-                body.MimeType = "text/csv";
-                //body.Parents = new List<ParentReference>() { new ParentReference() { Id = _parent } };
-
-                // File's content.
-                byte[] byteArray = System.IO.File.ReadAllBytes(_uploadFile);
-                System.IO.MemoryStream stream = new System.IO.MemoryStream(byteArray);
-                try
+                var newDirectory = DaimtoGoogleDriveHelper.createDirectory(service, "Cartogram", "Cartogram Reports", "root");
+                if (newDirectory.Id == null)
                 {
-                    FilesResource.InsertMediaUpload request = _service.Files.Insert(body, stream, "text/csv");
-                    request.Convert = true;
-                    request.Upload();
-                    return request.ResponseBody;
+                    //TODO handle this with a proper Drive Export form.
+                    ExtendedStatusStrip.AddStatus("Failed creating Google drive directory.");
+                    return;
                 }
-                catch (Exception e)
+                files.Add(newDirectory);
+            }
+
+            if (files.Count > 0)
+            {
+                var excelWorkbook = ExportExcel();
+                var uploadSpreadsheet = DaimtoGoogleDriveHelper.uploadFile(service, excelWorkbook, files[0].Id);
+                if (uploadSpreadsheet.Id != null)
                 {
-                    Console.WriteLine("An error occurred: " + e.Message);
-                    return null;
+                    System.Diagnostics.Process.Start(uploadSpreadsheet.AlternateLink);
+                    ExtendedStatusStrip.AddStatus(@"Successful upload!");
                 }
-            }
-            else
-            {
-                Console.WriteLine("File does not exist: " + _uploadFile);
-                return null;
-            }
-
-        }
-
-        private static string GetMimeType(string fileName)
-        {
-            string mimeType = "application/unknown";
-            string ext = System.IO.Path.GetExtension(fileName).ToLower();
-            Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
-            if (regKey != null && regKey.GetValue("Content Type") != null)
-                mimeType = regKey.GetValue("Content Type").ToString();
-            return mimeType;
-        }
-
-        private static string GetMimeType(string fileName, bool ignoreExtension = true)
-        {
-            string mimeType = "application/unknown";
-            string ext = System.IO.Path.GetExtension(fileName).ToLower();
-
-            if (ignoreExtension == false)
-            {
-                switch (ext)
+                else
                 {
-                    case ".ppt":
-                    case ".pptx":
-                        mimeType = "application/vnd.google-apps.presentation";
-                        break;
-                    case ".xls":
-                    case ".xlsx":
-                        mimeType = "application/vnd.google-apps.spreadsheet";
-                        break;
-                    case ".doc":
-                    case ".docx":
-                        mimeType = "application/vnd.google-apps.document";
-                        break;
-                    default:
-                        Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
-                        if (regKey != null && regKey.GetValue("Content Type") != null)
-                            mimeType = regKey.GetValue("Content Type").ToString();
-                        break;
+                    ExtendedStatusStrip.AddStatus(@"Failed uploading...");
                 }
+                File.Delete(excelWorkbook);
             }
-            else
-            {
-                Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
-                if (regKey != null && regKey.GetValue("Content Type") != null)
-                    mimeType = regKey.GetValue("Content Type").ToString();
-            }
-
-
-            return mimeType;
         }
 
-        //...
     }
 
 }
