@@ -25,7 +25,7 @@ Trello board of current to-do and working features: https://trello.com/b/12igsJu
 - Atziri Farming
 - OPT-IN MySQL data collection to correlate mass user data
 
-** Feature is ready but not supported in-game.**
+**Feature is ready but not supported in-game.**
 
 I've messaged GGG a handful of times with a proposed solution but it is not implemented in game as of yet. I hope that on public release of this application that GGG will be incentivized to make this easy for benefit of the community.
 - Experience gained per map (including a smaller percent of level eg. 0.64% of a level)
