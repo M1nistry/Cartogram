@@ -13,14 +13,20 @@ Trello board of current to-do and working features: https://trello.com/b/12igsJu
 - Logging map drops from Zana and Cartographers found
 - Adding notes to each map (eg. Shav's dropped for some guy in this map / X died from Y in here)
 - Customizable hotkeys for stoping maps/zana/cartos etc.
+- Reporting to spreadsheet/Google docs to share your results.
+- Overlay with basic information
+ 
 
 **Planned Features**
 
+- Basic reporting graphs/data
 - Zana Dailies
-- Reporting to spreadsheet/Google docs to share your results.
-- Add MySQL inserts to correlate mass users information
+- Fragment Farming
+- Atziri Farming
+- OPT-IN MySQL data collection to correlate mass user data
 
-Currently experience logging is disabled (a rudamentry OCR parse on the tooltip) in anticipation for an in-game feature to give the ability to CTRL+C your experience bar and get the values to the clipboard. This is apparently in GGG's issue tracker of things to implement.
+** Feature is ready but not supported in-game.**
+I've messaged GGG a handful of times with a proposed solution but it is not implemented in game as of yet. I hope that on public release of this application that GGG will be incentivized to make this easy for benefit of the community.
 - Experience gained per map (including a smaller percent of level eg. 0.64% of a level)
 
 ---
