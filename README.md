@@ -4,6 +4,7 @@ Path of Exile Map Tracking
 Cartogram is a desktop application to track maps ran by both yourself and party members. It tracks experience gained, map drops, currency, uniques and divination cards. It uses mostly clipboard data delivered by the Path of Exile client. 
 
 Trello board of current to-do and working features: https://trello.com/b/12igsJuT/cartogram
+Occasionally development will be streamed on Twitch: http://www.twitch.tv/0ministry
 
 **Working Features**
 
