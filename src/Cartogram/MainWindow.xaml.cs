@@ -12,22 +12,22 @@ using System.Windows.Interop;
 using Cartogram.SQL;
 
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Cartogram.JSON;
 using Cartogram.Properties;
-using GDataDB;
+
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v2;
-using Google.Apis.Drive.v2.Data;
-using Google.Apis.Services;
-using Google.Apis.Util.Store;
 using OfficeOpenXml;
 using OfficeOpenXml.Table;
-using Tesseract;
 using Brushes = System.Windows.Media.Brushes;
 using File = System.IO.File;
+
+using Google.Apis.Services;
+using Google.Apis.Util.Store;
 
 namespace Cartogram
 {
@@ -453,37 +453,37 @@ namespace Cartogram
         /// Uses OCR to parse the experience from the tooltip. Moves the mouse to the desired position automatically
         /// </summary>
         /// <returns>The string containing the full experience tooltip</returns>
-        private string CaptureExp()
-        {
-            var previousPoint = System.Windows.Forms.Cursor.Position;
-            System.Windows.Forms.Cursor.Position = new System.Drawing.Point(
-                (Screen.PrimaryScreen.Bounds.Width/2) - 200, Screen.PrimaryScreen.Bounds.Height);
-            System.Windows.Forms.Cursor.Clip = new Rectangle(System.Windows.Forms.Cursor.Position,
-                new System.Drawing.Size(1, 1));
-            Thread.Sleep(750);
-            var bmpScreenshot = new Bitmap((int) SystemParameters.PrimaryScreenWidth,
-                (int) SystemParameters.PrimaryScreenHeight,
-                System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            var gfxScreenshot = Graphics.FromImage(bmpScreenshot);
-            gfxScreenshot.CopyFromScreen(System.Windows.Forms.Cursor.Position.X + 35,
-                System.Windows.Forms.Cursor.Position.Y - 60, 0, 0, new System.Drawing.Size(580, 500),
-                CopyPixelOperation.SourceCopy);
-            bmpScreenshot.Save("Screenshot.bmp");
+        //private string CaptureExp()
+        //{
+        //    var previousPoint = System.Windows.Forms.Cursor.Position;
+        //    System.Windows.Forms.Cursor.Position = new System.Drawing.Point(
+        //        (Screen.PrimaryScreen.Bounds.Width/2) - 200, Screen.PrimaryScreen.Bounds.Height);
+        //    System.Windows.Forms.Cursor.Clip = new Rectangle(System.Windows.Forms.Cursor.Position,
+        //        new System.Drawing.Size(1, 1));
+        //    Thread.Sleep(750);
+        //    var bmpScreenshot = new Bitmap((int) SystemParameters.PrimaryScreenWidth,
+        //        (int) SystemParameters.PrimaryScreenHeight,
+        //        System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        //    var gfxScreenshot = Graphics.FromImage(bmpScreenshot);
+        //    gfxScreenshot.CopyFromScreen(System.Windows.Forms.Cursor.Position.X + 35,
+        //        System.Windows.Forms.Cursor.Position.Y - 60, 0, 0, new System.Drawing.Size(580, 500),
+        //        CopyPixelOperation.SourceCopy);
+        //    bmpScreenshot.Save("Screenshot.bmp");
 
-            var image = Pix.LoadFromFile(Directory.GetCurrentDirectory() + "\\Screenshot.bmp");
-            string result;
-            var tessData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram";
-            using (var engine = new TesseractEngine(tessData, "eng", EngineMode.Default))
-            {
-                using (var page = engine.Process(image))
-                {
-                    result = page.GetText();
-                }
-            }
-            File.Delete(Directory.GetCurrentDirectory() + "\\Screenshot.bmp");
-            System.Windows.Forms.Cursor.Position = new System.Drawing.Point(previousPoint.X, previousPoint.Y);
-            return result;
-        }
+        //    var image = Pix.LoadFromFile(Directory.GetCurrentDirectory() + "\\Screenshot.bmp");
+        //    string result;
+        //    var tessData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram";
+        //    using (var engine = new TesseractEngine(tessData, "eng", EngineMode.Default))
+        //    {
+        //        using (var page = engine.Process(image))
+        //        {
+        //            result = page.GetText();
+        //        }
+        //    }
+        //    File.Delete(Directory.GetCurrentDirectory() + "\\Screenshot.bmp");
+        //    System.Windows.Forms.Cursor.Position = new System.Drawing.Point(previousPoint.X, previousPoint.Y);
+        //    return result;
+        //}
 
         #endregion
 
