@@ -121,7 +121,7 @@ namespace Cartogram.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool HideRarity {
             get {
                 return ((bool)(this["HideRarity"]));
@@ -133,7 +133,7 @@ namespace Cartogram.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool HidePacksize {
             get {
                 return ((bool)(this["HidePacksize"]));

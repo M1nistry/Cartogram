@@ -75,8 +75,7 @@ namespace Cartogram
         public MainWindow()
         {
             InitializeComponent();
-
-            //Sqlite = new Sqlite();
+            
             _main = this;
             if (Sqlite.ExperienceCount() != 100) PopulateExperience();
             PopulateMapInformation();
@@ -653,6 +652,11 @@ namespace Cartogram
 
         private void MenuExport_Click(object sender, RoutedEventArgs e)
         {
+            if (GridMaps.Items.Count <= 0)
+            {
+                ExtendedStatusStrip.AddStatus("Cannot generate an export from no information");
+                return;
+            }
             var fileBrowser = new SaveFileDialog
             {
                 AddExtension = true,
@@ -680,8 +684,9 @@ namespace Cartogram
                 //var ws = pck.Workbook.Worksheets.Add("Map Export");
                 //ws.Cells["A1"].LoadFromDataTable(Sqlite.MapDataTable(), true, TableStyles.Medium10);
                 //ws.Cells.AutoFitColumns();
-
-                foreach (var dt in Sqlite.DropTables())
+                var dropTables = Sqlite.DropTables();
+                if (dropTables.Count <= 0) return "";
+                foreach (var dt in dropTables)
                 {
                     var wsDrops = pck.Workbook.Worksheets.Add(dt.TableName);
                     wsDrops.Cells["A1"].LoadFromDataTable(dt, true, TableStyles.Medium10);
@@ -698,16 +703,31 @@ namespace Cartogram
 
         private void MenuExportDrive_Click(object sender, RoutedEventArgs e)
         {
+            if (GridMaps.Items.Count <= 0)
+            {
+                ExtendedStatusStrip.AddStatus("Cannot generate an export (your maps data is empty)");
+                return;
+            }
             string[] scopes = { DriveService.Scope.DriveFile };
             const string applicationName = "Cartogram";
-            UserCredential credential;
+            UserCredential credential = null;
 
             using (var stream = new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
             {
-                var credPath = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram";
-                credPath = Path.Combine(credPath, ".credentials/google-drive");
+                try
+                {
+                    var credPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Cartogram";
+                    credPath = Path.Combine(credPath, ".credentials/google-drive");
 
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(GoogleClientSecrets.Load(stream).Secrets, scopes, "user", CancellationToken.None, new FileDataStore(credPath, true)).Result;
+                    credential =
+                        GoogleWebAuthorizationBroker.AuthorizeAsync(GoogleClientSecrets.Load(stream).Secrets, scopes,
+                            "user", CancellationToken.None, new FileDataStore(credPath, true)).Result;
+                }
+                catch (Exception ex)
+                {
+                    ExtendedStatusStrip.AddStatus("Error occured while exporting...");
+                    return;
+                }
             }
 
             // Create Drive API service.
