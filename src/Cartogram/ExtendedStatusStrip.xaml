@@ -6,12 +6,18 @@
              mc:Ignorable="d" 
              d:DesignHeight="150" Width="450">
     <Grid>
-        <ListBox x:Name="ListBoxStatus" Height="125" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Background="#FFF1EDED" Visibility="Hidden" BorderThickness="0,1,1,1"></ListBox>
+        <ListBox x:Name="ListBoxStatus" Height="130" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Background="#FFF1EDED" Visibility="Hidden" BorderThickness="0,1,1,1"></ListBox>
         <StatusBar x:Name="StatusBar" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Bottom" BorderThickness="0,1,0,0" BorderBrush="#FFABADB3">
-            <DockPanel x:Name="DockPanelControls" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Height="25" Margin="0,-3,0,0">
+            <DockPanel x:Name="DockPanelControls" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Height="25" Margin="-3,-3,0,0">
                 <Label x:Name="StatusTitle" Content="Status:" HorizontalAlignment="Left" Height="25" Width="45" FontSize="10.667" />
                 <Label x:Name="StatusValue" Content="" HorizontalAlignment="Left" Height="25" HorizontalContentAlignment="Left" FontSize="10.667" />
-                <Button x:Name="ButtonExpand" Content="↑" Width="15" Height="23" HorizontalAlignment="Right" BorderThickness="0" Background="#00DDDDDD" Margin="0,0,10,0" Click="ButtonExpand_Click"/>
+                <Button x:Name="ButtonExpand" Content="↑" Width="15" Height="17" HorizontalAlignment="Right" Margin="0,0,10,0" Click="ButtonExpand_Click" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Padding="-4">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <ContentPresenter Content="{TemplateBinding Content}"/>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </DockPanel>
         </StatusBar>
 

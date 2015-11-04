@@ -12,6 +12,7 @@ using System.Windows.Interop;
 using Cartogram.SQL;
 
 using System.Drawing;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -99,6 +100,8 @@ namespace Cartogram
             UpdateInformation();
             //_overlay = new Overlay();
             //_overlay.Show();
+
+            
         }
 
         public static MainWindow GetSingleton()
@@ -513,8 +516,8 @@ namespace Cartogram
 
         private void ExpandStatus(object sender, EventArgs e)
         {
-            ExtendedStatusStrip.Height = 125;
-            Canvas.SetTop(ExtendedStatusStrip, -100);
+            ExtendedStatusStrip.Height = 130;
+            Canvas.SetTop(ExtendedStatusStrip, -105);
         }
 
         private void GridMaps_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -769,6 +772,14 @@ namespace Cartogram
             }
         }
 
+        private async void MenuUpdateCheck_Click(object sender, RoutedEventArgs e)
+        {
+            var update = await UpdateCheck.UpdateAvaliable();
+            if (update)
+            {
+                System.Windows.MessageBox.Show("Update Avaliable");
+            }
+        }
     }
 
 }

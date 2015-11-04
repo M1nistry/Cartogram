@@ -15,7 +15,7 @@
             <RowDefinition Height="25"/>
         </Grid.RowDefinitions>
         <Canvas x:Name="CanvasHeader" HorizontalAlignment="Stretch" Height="90" VerticalAlignment="Top" Background="#FFF1EDED">
-            <Canvas x:Name="CanvasInformation" Height="49" Canvas.Left="10" Canvas.Top="25" Width="260" Background="White">
+            <Canvas x:Name="CanvasInformation" Height="49" Canvas.Left="10" Canvas.Top="30" Width="260" Background="White">
                 <Label x:Name="LabelRunToday" Content="Maps run today:" ToolTip="Maps run in the last 24 hours"/>
                 <Label x:Name="LabelMapsRunValue" Content="0" Canvas.Left="{Binding ActualWidth, ElementName=LabelRunToday}"/>
                 <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" BorderThickness="1" Height="50" Width="260" CornerRadius="1"/>
@@ -43,7 +43,7 @@
                     <MenuItem x:Name="MenuTopMost" Header="Always on top" IsCheckable="True" Click="MenuTopMost_Click"/>
                 </MenuItem>
                 <MenuItem Header="Help">
-                    <MenuItem Header="Check for updates"/>
+                    <MenuItem Header="Check for updates" Click="MenuUpdateCheck_Click"/>
                     <MenuItem Header="About"/>
                 </MenuItem>
             </Menu>

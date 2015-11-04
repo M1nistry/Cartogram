@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
-using System.Windows.Input.StylusPlugIns;
 
 namespace Cartogram.SQL
 {
