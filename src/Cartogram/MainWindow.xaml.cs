@@ -13,7 +13,6 @@ using Cartogram.SQL;
 
 using System.Drawing;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -73,6 +72,8 @@ namespace Cartogram
         private string _state;
         private IntPtr _handle;
 
+        public Version Version => Assembly.GetEntryAssembly().GetName().Version;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -98,16 +99,34 @@ namespace Cartogram
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
             _state = "WAITING";
             UpdateInformation();
-            //_overlay = new Overlay();
-            //_overlay.Show();
 
-            
+            if (Settings.Default.OverlayLeft <= 0 && Settings.Default.OverlayTop <= 0)
+            {
+                System.Windows.MessageBox.Show("As this is your first run please move the overlay to somewhere suitable on your game\nWhen happy lock it using Tools > Lock Overlay\n\nIf you want to disable the overlay you can do so in the settings.", @"Position Overlay", MessageBoxButton.OK, MessageBoxImage.Information);
+                Settings.Default.LockOverlay = false;
+                _overlay = new Overlay();
+                _overlay.Show();
+            }
+
+            if (Settings.Default.CheckUpdates) CheckUpdate();
         }
 
         public static MainWindow GetSingleton()
         {
             return _main;
         }
+
+        private async void CheckUpdate()
+        {
+            var githubVersion = await UpdateCheck.UpdateAvaliable();
+            if (githubVersion <= Version) return;
+            var aboutWindow = new About
+            {
+                GithubVersion = githubVersion
+            };
+            aboutWindow.Show();
+        }
+
 
         protected override void OnSourceInitialized(EventArgs e)
         {
@@ -640,16 +659,23 @@ namespace Cartogram
             Settings.Default.LockOverlay = MenuLockOverlay.IsChecked;
             Settings.Default.Save();
 
-            if (_overlay == null)
+            if (!Settings.Default.LockOverlay)
             {
-                _overlay = new Overlay();
-                _overlay.Show();
+                if (_overlay == null)
+                {
+                    _overlay = new Overlay();
+                    _overlay.Show();
+                }
+                else
+                {
+                    _overlay.Close();
+                    _overlay = new Overlay();
+                    _overlay.Show();
+                }
             }
             else
             {
-                _overlay.Close();
-                _overlay = new Overlay();
-                _overlay.Show();
+                _overlay?.Close();
             }
         }
 
@@ -772,13 +798,15 @@ namespace Cartogram
             }
         }
 
-        private async void MenuUpdateCheck_Click(object sender, RoutedEventArgs e)
+        private void MenuUpdateCheck_Click(object sender, RoutedEventArgs e)
         {
-            var update = await UpdateCheck.UpdateAvaliable();
-            if (update)
-            {
-                System.Windows.MessageBox.Show("Update Avaliable");
-            }
+            CheckUpdate();
+        }
+
+        private void MenuAbout_Click(object sender, RoutedEventArgs e)
+        {
+            var aboutWindow = new About();
+            aboutWindow.Show();
         }
     }
 

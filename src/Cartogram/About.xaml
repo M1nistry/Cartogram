@@ -5,12 +5,20 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Cartogram"
         mc:Ignorable="d"
-        Title="About" Height="339" Width="300">
+        Title="About" Height="339" Width="300" Loaded="Window_Loaded">
     <Grid Background="#FFF1EDED">
         <Canvas>
-            <Image x:Name="image" HorizontalAlignment="Center" Height="69" Width="66" Source="Resources/ImageIcon.png" Canvas.Left="111" Canvas.Top="50"/>
-            <Label Content="Cartogram" FontSize="21.333" FontFamily="Calibri" Canvas.Left="95" Canvas.Top="124"/>
-            <TextBlock Text="0.0.1.4" FontSize="14.33" FontFamily="Calibri" Canvas.Left="126" Canvas.Top="157"/>
+            <Image x:Name="image" HorizontalAlignment="Center" Height="69" Width="66" Source="Resources/ImageIcon.png" Canvas.Left="111" Canvas.Top="25" ToolTip="Click to visit the project on Github" MouseDown="image_MouseDown"/>
+            <Label Content="Cartogram" FontSize="21.333" FontFamily="Calibri" Canvas.Left="95" Canvas.Top="99"/>
+            <TextBlock x:Name="TextBlockVersion" Text="0.0.0.0" FontSize="14.33" FontFamily="Calibri" Canvas.Left="126" Canvas.Top="132"/>
+            <Grid x:Name="CanvasUpdate" Height="100" Canvas.Left="10" Canvas.Top="154" Width="272" Visibility="Hidden">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="24"/>
+                    <RowDefinition Height="24"/>
+                </Grid.RowDefinitions>
+                <Label x:Name="LabelBlockVersion" Content="A new version has been found:" Width="272" HorizontalContentAlignment="Center" Grid.Row="0"/>
+                <TextBlock x:Name="LabelGithubLink" Grid.Row="1" HorizontalAlignment="Center" Text="See on Github" PreviewMouseDown="LabelGithubLink_PreviewMouseDown" TextDecorations="Underline" Foreground="#FF0C82B9" MouseEnter="LabelGithubLink_MouseEnter" MouseLeave="LabelGithubLink_MouseLeave"/>
+            </Grid>
         </Canvas>
     </Grid>
 </Window>

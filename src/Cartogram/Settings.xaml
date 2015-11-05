@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" d:DesignWidth="250" Height="192" Width="250" WindowStyle="ToolWindow" Title="Settings">
+            xmlns:p="clr-namespace:Cartogram.Properties"
+             mc:Ignorable="d" d:DesignWidth="250" Height="224.772" Width="250" WindowStyle="ToolWindow" Title="Settings">
     <Grid>
         <Border BorderBrush="Black" BorderThickness="1"/>
         <Canvas x:Name="CanvasSettings" Background="#FFF1EDED">
@@ -28,8 +29,9 @@
                 <TextBlock Grid.Row="3" Grid.Column="0" Text="New Map Dialog" Margin="3,3"/>
                 <Button x:Name="ButtonNewMap" Grid.Column="1" Grid.Row="3" Content="" Margin="1,1,1,1" BorderBrush="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
             </Grid>
-            <Button x:Name="ButtonSave" Content="Save" Canvas.Left="106" Canvas.Top="128" Width="60" ToolTip="Saves these settings to be used by the application." Click="ButtonSave_Click"/>
-            <Button x:Name="ButtonCancel" Content="Cancel" Canvas.Left="171" Canvas.Top="128" Width="60" ToolTip="Cancels any changes and reverts to the previous settings values." Click="ButtonCancel_Click"/>
+            <Button x:Name="ButtonSave" Content="Save" Canvas.Left="107" Canvas.Top="165" Width="60" ToolTip="Saves these settings to be used by the application." Click="ButtonSave_Click"/>
+            <Button x:Name="ButtonCancel" Content="Cancel" Canvas.Left="172" Canvas.Top="165" Width="60" ToolTip="Cancels any changes and reverts to the previous settings values." Click="ButtonCancel_Click"/>
+            <CheckBox x:Name="checkBoxCheckUpdates" Content="Check for updates on startup" Canvas.Left="11" Canvas.Top="124" IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=CheckUpdates, Mode=TwoWay}"/>
         </Canvas>
     </Grid>
 </Window>

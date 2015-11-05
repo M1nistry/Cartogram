@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Octokit;
+using OfficeOpenXml.ConditionalFormatting;
 
 namespace Cartogram
 {
@@ -14,19 +15,20 @@ namespace Cartogram
             
         }
 
-        internal async static Task<bool> UpdateAvaliable()
+        /// <summary>
+        /// Async query to Github to get the most recent release for Cartogram
+        /// </summary>
+        /// <returns>The version found on Github</returns>
+        internal async static Task<Version> UpdateAvaliable()
         {
             var github = new GitHubClient(new ProductHeaderValue("Cartogram"));
-
             var releases = await github.Release.GetAll("M1nistry", "Cartogram");
 
-            var assem = Assembly.GetEntryAssembly();
-            var assemName = assem.GetName();
-            var ver = assemName.Version;
+            if (releases.Count <= 0) return new Version(0,0,0,0);
             var releaseTag = releases[0].TagName;
-            if (!AcceptableVersion(releaseTag)) return false;
+            if (!AcceptableVersion(releaseTag)) return new Version(0,0,0,0);
             var githubVersion = new Version(releaseTag);
-            return githubVersion > ver;
+            return githubVersion;
         }
 
         private static bool AcceptableVersion(string str)

@@ -44,7 +44,7 @@
                 </MenuItem>
                 <MenuItem Header="Help">
                     <MenuItem Header="Check for updates" Click="MenuUpdateCheck_Click"/>
-                    <MenuItem Header="About"/>
+                    <MenuItem Header="About" Click="MenuAbout_Click"/>
                 </MenuItem>
             </Menu>
         </Canvas>
