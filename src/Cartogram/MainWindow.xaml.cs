@@ -64,6 +64,8 @@ namespace Cartogram
         private static MainWindow _main;
         internal NewMap _newMap;
         private Overlay _overlay;
+        private ApplicationSettings _settings;
+        private About _about;
 
         private readonly DispatcherTimer _mapTimer;
         internal Map CurrentMap;
@@ -116,10 +118,14 @@ namespace Cartogram
             return _main;
         }
 
-        private async void CheckUpdate()
+        private async void CheckUpdate(bool manual = false)
         {
             var githubVersion = await UpdateCheck.UpdateAvaliable();
-            if (githubVersion <= Version) return;
+            if (githubVersion <= Version)
+            {
+                if (manual) System.Windows.MessageBox.Show("No update found!", "No update found!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                return;
+            }
             var aboutWindow = new About
             {
                 GithubVersion = githubVersion
@@ -158,7 +164,7 @@ namespace Cartogram
                 RegisterHotKey(_handle, 0, 0, Convert.ToUInt32(Settings.Default.mapHotkey));
                 RegisterHotKey(_handle, 1, 0, Convert.ToUInt32(Settings.Default.zanaHotkey));
                 RegisterHotKey(_handle, 2, 0, Convert.ToUInt32(Settings.Default.cartoHotkey));
-                RegisterHotKey(_handle, 3, 0, 121);
+                RegisterHotKey(_handle, 3, 0, Convert.ToUInt32(Settings.Default.newHotkey));
             }
             catch (Exception Cuex)
             {
@@ -260,7 +266,7 @@ namespace Cartogram
             if (_overlay != null && _overlay.Visibility == Visibility.Visible)
             {
                 var mapList = Sqlite.MapList(CurrentMap.Id);
-                var mapDrops = mapList.Aggregate("", (current, item) => current + (item.Value + ", "));
+                var mapDrops = mapList.Aggregate("", (current, item) => current + (item.Key + ", "));
                 if (mapDrops.Length > 0) mapDrops = mapDrops.Remove(mapDrops.Length - 2, 2);
                 _overlay.LabelMapDrops.Content = @"Map Drops: " + mapDrops;
             }
@@ -428,7 +434,7 @@ namespace Cartogram
                             if (_newMap == null) _newMap = new NewMap();
                             _newMap.Closed += delegate
                             {
-                                if (_newMap.CurrentMap == null) _newMap = null;
+                                if (_newMap?.CurrentMap == null) _newMap = null;
                             };
                             if (_newMap.CurrentMap == null && !_newMap.IsVisible) _newMap.ShowDialog();
                             if (_newMap == null) return IntPtr.Zero;
@@ -554,8 +560,8 @@ namespace Cartogram
         private void MenuSettings_Click(object sender, RoutedEventArgs e)
         {
             UnregisterHotkeys();
-            var settingsWindow = new ApplicationSettings();
-            settingsWindow.Show();
+            _settings = new ApplicationSettings();
+            _settings.Show();
         }
 
         private void GridMaps_DetailsClick(object sender, RoutedEventArgs e)
@@ -799,13 +805,30 @@ namespace Cartogram
 
         private void MenuUpdateCheck_Click(object sender, RoutedEventArgs e)
         {
-            CheckUpdate();
+            CheckUpdate(true);
         }
 
         private void MenuAbout_Click(object sender, RoutedEventArgs e)
         {
-            var aboutWindow = new About();
-            aboutWindow.Show();
+            if (_about != null && _about.Visibility == Visibility.Visible)
+            {
+                _about.BringIntoView();
+                _about.Focus();
+            }
+            else
+            {
+                _about = new About();
+                _about.Show();
+                _about.Closing += (o, ea) => _about = null;
+            }
+        }
+
+        private void Cartogram_Closing(object sender, CancelEventArgs e)
+        {
+            _overlay?.Close();
+            _newMap?.Close();
+            _settings?.Close();
+            _about?.Close();
         }
     }
 

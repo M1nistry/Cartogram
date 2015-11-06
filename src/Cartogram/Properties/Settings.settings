@@ -57,7 +57,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="newHotkey" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">121</Value>
+      <Value Profile="(Default)">116</Value>
     </Setting>
     <Setting Name="OverlayEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

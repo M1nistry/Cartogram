@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Name="Cartogram" x:Class="Cartogram.MainWindow"
-        Title="Cartogram" Height="520" Width="480" MaxWidth="480" MinWidth="450" Icon="Resources/24.ico">
+        Title="Cartogram" Height="520" Width="480" MaxWidth="480" MinWidth="450" Icon="Resources/24.ico" Closing="Cartogram_Closing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="85"/>

@@ -241,7 +241,7 @@ namespace Cartogram.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("121")]
+        [global::System.Configuration.DefaultSettingValueAttribute("116")]
         public int newHotkey {
             get {
                 return ((int)(this["newHotkey"]));
