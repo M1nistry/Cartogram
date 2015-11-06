@@ -175,6 +175,7 @@ namespace Cartogram
             UnregisterHotKey(helper.Handle, 0);
             UnregisterHotKey(helper.Handle, 1);
             UnregisterHotKey(helper.Handle, 2);
+            UnregisterHotKey(helper.Handle, 3);
         }
 
         private void LoadSettings()
@@ -409,8 +410,7 @@ namespace Cartogram
                                 ExtendedStatusStrip.AddStatus($"Finished Zana, returning to {CurrentMap.Name} map");
                                 break;
                             }
-                            ExtendedStatusStrip.AddStatus(
-                                $"Zana found, press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} to toggle back.");
+                            ExtendedStatusStrip.AddStatus($"Zana found, press {KeyInterop.KeyFromVirtualKey(Settings.Default.zanaHotkey)} when finished.");
                             _state = "ZANA";
                             break;
 
@@ -418,12 +418,10 @@ namespace Cartogram
                             if (_state == "CARTO")
                             {
                                 _state = "DROPS";
-                                ExtendedStatusStrip.AddStatus(
-                                    $"Finished Cartogram, returning to {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} map");
+                                ExtendedStatusStrip.AddStatus($"Finished Cartographer, returning to {CurrentMap.Name} map recording");
                                 break;
                             }
-                            ExtendedStatusStrip.AddStatus(
-                                $"Cartographer found! press {KeyInterop.KeyFromVirtualKey(Settings.Default.mapHotkey)} when drops recorded.");
+                            ExtendedStatusStrip.AddStatus($"Cartographer found! press {KeyInterop.KeyFromVirtualKey(Settings.Default.cartoHotkey)} after drops have been recorded.");
                             _state = "CARTO";
                             break;
                         case (3):
@@ -535,8 +533,8 @@ namespace Cartogram
 
         private void ExpandStatus(object sender, EventArgs e)
         {
-            ExtendedStatusStrip.Height = 130;
-            Canvas.SetTop(ExtendedStatusStrip, -105);
+            ExtendedStatusStrip.Height = 150;
+            Canvas.SetTop(ExtendedStatusStrip, -125);
         }
 
         private void GridMaps_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -555,6 +553,7 @@ namespace Cartogram
 
         private void MenuSettings_Click(object sender, RoutedEventArgs e)
         {
+            UnregisterHotkeys();
             var settingsWindow = new ApplicationSettings();
             settingsWindow.Show();
         }

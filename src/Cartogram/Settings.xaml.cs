@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -13,6 +12,46 @@ namespace Cartogram
     /// </summary>
     public partial class ApplicationSettings : Window
     {
+        public int MapHotkey {
+            get { return Properties.Settings.Default.mapHotkey; }
+            set
+            {
+                ButtonMap.Content = KeyInterop.KeyFromVirtualKey(value).ToString();
+                Properties.Settings.Default.mapHotkey = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        public int ZanaHotkey {
+            get { return Properties.Settings.Default.zanaHotkey; }
+            set
+            {
+                ButtonZana.Content = KeyInterop.KeyFromVirtualKey(value).ToString();
+                Properties.Settings.Default.zanaHotkey = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        public int CartoHotkey {
+            get { return Properties.Settings.Default.cartoHotkey; }
+            set
+            {
+                ButtonCartographer.Content = KeyInterop.KeyFromVirtualKey(value).ToString();
+                Properties.Settings.Default.cartoHotkey = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        public int NewHotkey {
+            get { return Properties.Settings.Default.newHotkey; }
+            set
+            {
+                ButtonNewMap.Content = KeyInterop.KeyFromVirtualKey(value).ToString();
+                Properties.Settings.Default.newHotkey = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+
         private readonly MainWindow _main;
         //private KeysConverter kConverter;
         public ApplicationSettings()
@@ -21,9 +60,10 @@ namespace Cartogram
             //kConverter = new KeysConverter();
             _main = MainWindow.GetSingleton();
             Icon = _main.Icon;
-            ButtonMap.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.mapHotkey).ToString();
-            ButtonZana.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.zanaHotkey).ToString();
-            ButtonCartographer.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.cartoHotkey);
+            ButtonMap.Content = KeyInterop.KeyFromVirtualKey(MapHotkey).ToString();
+            ButtonZana.Content = KeyInterop.KeyFromVirtualKey(ZanaHotkey).ToString();
+            ButtonCartographer.Content = KeyInterop.KeyFromVirtualKey(CartoHotkey).ToString();
+            ButtonNewMap.Content = KeyInterop.KeyFromVirtualKey(NewHotkey).ToString();
         }
 
 
@@ -45,13 +85,16 @@ namespace Cartogram
                 switch (button.Name)
                 {
                     case ("ButtonMap"):
-                        button.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.mapHotkey).ToString();
+                        button.Content = KeyInterop.KeyFromVirtualKey(MapHotkey).ToString();
                         break;
                     case ("ButtonZana"):
-                        button.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.zanaHotkey).ToString();
+                        button.Content = KeyInterop.KeyFromVirtualKey(ZanaHotkey).ToString();
                         break;
                     case ("ButtonCarto"):
-                        button.Content = KeyInterop.KeyFromVirtualKey(Properties.Settings.Default.cartoHotkey).ToString();
+                        button.Content = KeyInterop.KeyFromVirtualKey(CartoHotkey).ToString();
+                        break;
+                    case ("ButtonNewMap"):
+                        button.Content = KeyInterop.KeyFromVirtualKey(NewHotkey).ToString();
                         break;
                     default:
                         if (button.Content?.ToString() != string.Empty && button.Content?.ToString() != "None") break;
@@ -70,35 +113,46 @@ namespace Cartogram
 
         private void ChangeHotkey(ContentControl button, Key key)
         {
+            if (key == Key.F9) MessageBox.Show("F9");
+            if (key == Key.F10) MessageBox.Show("F10");
             button.Content = key.ToString();
             button.BorderBrush = Brushes.Gray;
+            var keyInt = KeyInterop.VirtualKeyFromKey(key);
             switch (button.Name)
             {
                 case ("ButtonMap"):
-                    Properties.Settings.Default.mapHotkey = KeyInterop.VirtualKeyFromKey(key);
+                    MapHotkey = keyInt;
                     break;
                 case ("ButtonZana"):
-                    Properties.Settings.Default.zanaHotkey = KeyInterop.VirtualKeyFromKey(key);
+                    ZanaHotkey = keyInt;
                     break;
                 case ("ButtonCartographer"):
-                    Properties.Settings.Default.cartoHotkey = KeyInterop.VirtualKeyFromKey(key);
+                    CartoHotkey = keyInt;
+                    break;
+                case ("ButtonNewMap"):
+                    NewHotkey = keyInt;
                     break;
             }
 
-            if (ButtonMap.Content.ToString() == button.Content.ToString() && !Equals(button, ButtonMap))
+            if (MapHotkey == keyInt && !Equals(button, ButtonMap))
             {
                 ButtonMap.Content = string.Empty;
-                Properties.Settings.Default.mapHotkey = KeyInterop.VirtualKeyFromKey(Key.None);
+                MapHotkey = KeyInterop.VirtualKeyFromKey(Key.None);
             }
-            if (ButtonZana.Content.ToString() == button.Content.ToString() && !Equals(button, ButtonZana))
+            if (ZanaHotkey == keyInt && !Equals(button, ButtonZana))
             {
                 ButtonZana.Content = string.Empty;
-                Properties.Settings.Default.zanaHotkey = KeyInterop.VirtualKeyFromKey(Key.None);
+                ZanaHotkey = KeyInterop.VirtualKeyFromKey(Key.None);
             }
-            if (ButtonCartographer.Content.ToString() == button.Content.ToString() && !Equals(button, ButtonCartographer))
+            if (CartoHotkey == keyInt && !Equals(button, ButtonCartographer))
             {
                 ButtonCartographer.Content = string.Empty;
-                Properties.Settings.Default.cartoHotkey = KeyInterop.VirtualKeyFromKey(Key.None);
+                CartoHotkey = KeyInterop.VirtualKeyFromKey(Key.None);
+            }
+            if (NewHotkey == keyInt && !Equals(button, ButtonNewMap))
+            {
+                ButtonNewMap.Content = string.Empty;
+                NewHotkey = KeyInterop.VirtualKeyFromKey(Key.None);
             }
         }
 
@@ -112,6 +166,9 @@ namespace Cartogram
 
         private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {
+            Properties.Settings.Default.Reload();
+            Properties.Settings.Default.Save();
+            _main.RegisterHotkeys();
             Close();
         }
     }

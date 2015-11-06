@@ -157,7 +157,7 @@ namespace Cartogram.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool LockOverlay {
             get {
                 return ((bool)(this["LockOverlay"]));
@@ -236,6 +236,30 @@ namespace Cartogram.Properties {
             }
             set {
                 this["CheckUpdates"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("121")]
+        public int newHotkey {
+            get {
+                return ((int)(this["newHotkey"]));
+            }
+            set {
+                this["newHotkey"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool OverlayEnabled {
+            get {
+                return ((bool)(this["OverlayEnabled"]));
+            }
+            set {
+                this["OverlayEnabled"] = value;
             }
         }
     }

@@ -32,6 +32,8 @@ namespace Cartogram
             ButtonExpand.Content = ButtonExpand.Content.ToString() == "↓" ? "↑" : "↓";
             ListBoxStatus.Visibility = ListBoxStatus.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden;
             Height = Height <= 25 ? 150 : 25;
+            ListBoxStatus.Items.MoveCurrentToLast();
+            ListBoxStatus.ScrollIntoView(ListBoxStatus.Items.CurrentItem);
         }
     }
 }

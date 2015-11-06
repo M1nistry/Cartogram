@@ -36,7 +36,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LockOverlay" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="OverlayPosition" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -54,6 +54,12 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="CheckUpdates" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="newHotkey" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">121</Value>
+    </Setting>
+    <Setting Name="OverlayEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>

@@ -6,8 +6,12 @@
              mc:Ignorable="d" 
              d:DesignHeight="150" Width="450">
     <Grid>
-        <ListBox x:Name="ListBoxStatus" Height="130" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Background="#FFF1EDED" Visibility="Hidden" BorderThickness="0,1,1,1"></ListBox>
-        <StatusBar x:Name="StatusBar" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Bottom" BorderThickness="0,1,0,0" BorderBrush="#FFABADB3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="25"/>
+        </Grid.RowDefinitions>
+        <ListBox x:Name="ListBoxStatus" Grid.Row="0" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Background="#FFF1EDED" Visibility="Hidden" BorderThickness="0,1,1,0" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Disabled"></ListBox>
+        <StatusBar x:Name="StatusBar" Grid.Row="1" HorizontalAlignment="Stretch" Height="25" VerticalAlignment="Bottom" BorderThickness="0,1,0,0" BorderBrush="#FFABADB3">
             <DockPanel x:Name="DockPanelControls" Width="{Binding ElementName=StatusBar, Path=ActualWidth}" Height="25" Margin="-3,-3,0,0">
                 <Label x:Name="StatusTitle" Content="Status:" HorizontalAlignment="Left" Height="25" Width="45" FontSize="10.667" />
                 <Label x:Name="StatusValue" Content="" HorizontalAlignment="Left" Height="25" HorizontalContentAlignment="Left" FontSize="10.667" />
