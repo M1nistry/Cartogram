@@ -66,6 +66,7 @@ namespace Cartogram
         private Overlay _overlay;
         private ApplicationSettings _settings;
         private About _about;
+        private ErrorLog _errorLog;
 
         private readonly DispatcherTimer _mapTimer;
         internal Map CurrentMap;
@@ -110,6 +111,12 @@ namespace Cartogram
                 _overlay.Show();
             }
 
+            if (Settings.Default.CallUpgrade)
+            {
+                Settings.Default.Upgrade();
+                Settings.Default.CallUpgrade = false;
+                Settings.Default.Save();
+            }
             if (Settings.Default.CheckUpdates) CheckUpdate();
         }
 
@@ -120,17 +127,27 @@ namespace Cartogram
 
         private async void CheckUpdate(bool manual = false)
         {
-            var githubVersion = await UpdateCheck.UpdateAvaliable();
-            if (githubVersion <= Version)
+            try
             {
-                if (manual) System.Windows.MessageBox.Show("No update found!", "No update found!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                return;
+                var githubVersion = await UpdateCheck.UpdateAvaliable();
+                if (githubVersion <= Version)
+                {
+                    if (manual)
+                        System.Windows.MessageBox.Show("No update found!", "No update found!", MessageBoxButton.OK,
+                            MessageBoxImage.Exclamation);
+                    return;
+                }
+                var aboutWindow = new About
+                {
+                    GithubVersion = githubVersion
+                };
+                aboutWindow.Show();
             }
-            var aboutWindow = new About
+            catch (Exception ex)
             {
-                GithubVersion = githubVersion
-            };
-            aboutWindow.Show();
+                Sqlite.WriteError(ex, @"CheckUpdate");
+            }
+            
         }
 
 
@@ -168,10 +185,10 @@ namespace Cartogram
             }
             catch (Exception Cuex)
             {
-                System.Windows.MessageBox.Show(
-                    @"Failed to register hotkeys, please close the application and try again",
+                System.Windows.MessageBox.Show(@"Failed to register hotkeys, please close the application and try again",
                     @"Failed registering hotkeys", MessageBoxButton.OK, MessageBoxImage.Error);
                 ExtendedStatusStrip.AddStatus(@"Failed registering hotkeys, please restart application.");
+                Sqlite.WriteError(Cuex, @"RegisterHotkeys");
             }
         }
 
@@ -287,40 +304,41 @@ namespace Cartogram
                     if (ParseHandler.CheckClipboard())
                     {
                         var clipboard = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
-                        switch (_state)
+                        try
                         {
-                            //case ("WAITING"):
-                            //    CurrentMap = ParseHandler.ParseClipboard();
-                            //    if (CurrentMap == null) break;
-                            //    CurrentMap.ExpBefore = ExpValue();
-                            //    var newMap = new NewMap();
-                            //    newMap.ShowDialog();
-                            //    if (newMap.Cancelled) return IntPtr.Zero;
-                            //    //if (publicOpt)
-                            //    //{
-                            //    //    _mySqlId = _mySql.AddMap(CurrentMap);
-                            //    //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
-                            //    //}
-                            //    //CurrentMap.SqlId = _mySqlId;
-                            //    if (CurrentMap.Id > 0)
-                            //    {
-                            //        CanvasInformation.Visibility = Visibility.Hidden;
-                            //        CanvasCurrentMap.Visibility = Visibility.Visible;
-                            //        LabelMapValue.Content = CurrentMap.Name;
-                            //        _timerTicks = 0;
-                            //        _mapTimer.Start();
-                            //        CurrentMapBorder.BorderBrush = Brushes.Red;
-                            //        ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
-                            //        RefreshGrids();
-                            //        GridMaps.SelectedIndex = 0;
-                            //        _state = "DROPS";
-                            //    }
-                            //    break;
+                            switch (_state)
+                            {
+                                //case ("WAITING"):
+                                //    CurrentMap = ParseHandler.ParseClipboard();
+                                //    if (CurrentMap == null) break;
+                                //    CurrentMap.ExpBefore = ExpValue();
+                                //    var newMap = new NewMap();
+                                //    newMap.ShowDialog();
+                                //    if (newMap.Cancelled) return IntPtr.Zero;
+                                //    //if (publicOpt)
+                                //    //{
+                                //    //    _mySqlId = _mySql.AddMap(CurrentMap);
+                                //    //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
+                                //    //}
+                                //    //CurrentMap.SqlId = _mySqlId;
+                                //    if (CurrentMap.Id > 0)
+                                //    {
+                                //        CanvasInformation.Visibility = Visibility.Hidden;
+                                //        CanvasCurrentMap.Visibility = Visibility.Visible;
+                                //        LabelMapValue.Content = CurrentMap.Name;
+                                //        _timerTicks = 0;
+                                //        _mapTimer.Start();
+                                //        CurrentMapBorder.BorderBrush = Brushes.Red;
+                                //        ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
+                                //        RefreshGrids();
+                                //        GridMaps.SelectedIndex = 0;
+                                //        _state = "DROPS";
+                                //    }
+                                //    break;
 
-                            case ("DROPS"):
-                                if (CurrentMap.Id <= 0) break;
-                                try
-                                {
+                                case ("DROPS"):
+                                    if (CurrentMap.Id <= 0) break;
+
                                     if (clipboard.Contains("Map") && !clipboard.Contains("Stack Size:"))
                                     {
                                         var parsedMap = ParseHandler.ParseClipboard();
@@ -350,29 +368,31 @@ namespace Cartogram
                                     }
                                     RefreshGrids();
                                     GridMaps.SelectedIndex = 0;
-                                }
-                                catch (Exception)
-                                {
                                     System.Windows.Forms.Clipboard.SetDataObject(string.Empty, false, 5, 200);
                                     break;
-                                }
-                                System.Windows.Forms.Clipboard.SetDataObject(string.Empty, false, 5, 200);
-                                break;
 
-                            case ("ZANA"):
-                                if (CurrentMap.Id <= 0) break;
-                                Sqlite.AddDrop(ParseHandler.ParseClipboard(), CurrentMap.Id, 1);
-                                //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(ParseClipboard(), SqliteiteId, 1);
-                                break;
 
-                            case ("CARTO"):
-                                if (CurrentMap.Id <= 0) break;
-                                Sqlite.AddDrop(ParseHandler.ParseClipboard(), CurrentMap.Id, 0, 1);
-                                //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(ParseClipboard(), SqliteiteId, 0, 1);
-                                break;
+                                case ("ZANA"):
+                                    if (CurrentMap.Id <= 0) break;
+                                    Sqlite.AddDrop(ParseHandler.ParseClipboard(), CurrentMap.Id, 1);
+                                    //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(ParseClipboard(), SqliteiteId, 1);
+                                    break;
+
+                                case ("CARTO"):
+                                    if (CurrentMap.Id <= 0) break;
+                                    Sqlite.AddDrop(ParseHandler.ParseClipboard(), CurrentMap.Id, 0, 1);
+                                    //if (publicOpt && _mySqlId > 0) _mySql.AddDrop(ParseClipboard(), SqliteiteId, 0, 1);
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ExtendedStatusStrip.AddStatus(@"An error occured, check your error logs");
+                            Sqlite.WriteError(ex, @"WndProc[DROPS]");
+                            System.Windows.Forms.Clipboard.SetDataObject(string.Empty, false, 5, 200);
+                            break;
                         }
                     }
-                    Console.WriteLine(@"HEYHEY We're Sending Message " + msg);
                     SendMessage(_nextClipboardViewer, msg, wParam, lParam);
                     break;
 
@@ -431,37 +451,48 @@ namespace Cartogram
                             _state = "CARTO";
                             break;
                         case (3):
-                            if (_newMap == null) _newMap = new NewMap();
-                            _newMap.Closed += delegate
+                            try
                             {
-                                if (_newMap?.CurrentMap == null) _newMap = null;
-                            };
-                            if (_newMap.CurrentMap == null && !_newMap.IsVisible) _newMap.ShowDialog();
-                            if (_newMap == null) return IntPtr.Zero;
-                            if (CurrentMap == null || CurrentMap?.Id <= 0) return IntPtr.Zero;
-                            //if (publicOpt)
-                            //{
-                            //    _mySqlId = _mySql.AddMap(CurrentMap);
-                            //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
-                            //}
-                            //CurrentMap.SqlId = _mySqlId;
-                            OnSourceInitialized(new RoutedEventArgs());
-                            CanvasInformation.Visibility = Visibility.Hidden;
-                            CanvasCurrentMap.Visibility = Visibility.Visible;
-                            LabelMapValue.Content = CurrentMap.Name;
-                            if (_overlay == null)
-                            {
-                                _overlay = new Overlay();
-                                _overlay.Show();
+
+                                if (_newMap == null) _newMap = new NewMap();
+                                _newMap.Closed += delegate
+                                {
+                                    if (_newMap?.CurrentMap == null) _newMap = null;
+                                };
+                                if (_newMap.CurrentMap == null && !_newMap.IsVisible) _newMap.ShowDialog();
+                                if (_newMap == null) return IntPtr.Zero;
+                                if (CurrentMap == null || CurrentMap?.Id <= 0) return IntPtr.Zero;
+                                //if (publicOpt)
+                                //{
+                                //    _mySqlId = _mySql.AddMap(CurrentMap);
+                                //    labelMySqlId.Text = _mySqlId.ToString(CultureInfo.InvariantCulture);
+                                //}
+                                //CurrentMap.SqlId = _mySqlId;
+                                OnSourceInitialized(new RoutedEventArgs());
+                                CanvasInformation.Visibility = Visibility.Hidden;
+                                CanvasCurrentMap.Visibility = Visibility.Visible;
+                                LabelMapValue.Content = CurrentMap.Name;
+                                if (_overlay == null && Settings.Default.OverlayEnabled)
+                                {
+                                    _overlay = new Overlay();
+                                    _overlay.Show();
+                                    _overlay.LabelCurrentMap.Content = $"Current Map: {CurrentMap.Name} | 00:00:00";
+                                }
+                                _timerTicks = 0;
+                                _mapTimer.Start();
+                                CurrentMapBorder.BorderBrush = Brushes.Red;
+                                ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
+                                RefreshGrids();
+                                GridMaps.SelectedIndex = 0;
+                                _state = "DROPS";
+
                             }
-                            _overlay.LabelCurrentMap.Content = $"Current Map: {CurrentMap.Name} | 00:00:00";
-                            _timerTicks = 0;
-                            _mapTimer.Start();
-                            CurrentMapBorder.BorderBrush = Brushes.Red;
-                            ExtendedStatusStrip.AddStatus($"Beginning {CurrentMap.Name} map...");
-                            RefreshGrids();
-                            GridMaps.SelectedIndex = 0;
-                            _state = "DROPS";
+                            catch (Exception ex)
+                            {
+                                ExtendedStatusStrip.AddStatus(@"An error occured, check your error logs");
+                                Sqlite.WriteError(ex, @"NewMap");
+                                break;
+                            }
                             break;
                     }
                     break;
@@ -669,6 +700,7 @@ namespace Cartogram
                 if (_overlay == null)
                 {
                     _overlay = new Overlay();
+                    _overlay.IndicatorImage = false;
                     _overlay.Show();
                 }
                 else
@@ -829,6 +861,21 @@ namespace Cartogram
             _newMap?.Close();
             _settings?.Close();
             _about?.Close();
+        }
+
+        private void MenuErrorLog_Click(object sender, RoutedEventArgs e)
+        {
+            if (_errorLog != null && _errorLog.Visibility == Visibility.Visible)
+            {
+                _errorLog.BringIntoView();
+                _errorLog.Focus();
+            }
+            else
+            {
+                _errorLog = new ErrorLog();
+                _errorLog.Show();
+                _errorLog.Closing += (o, ea) => _errorLog = null;
+            }
         }
     }
 

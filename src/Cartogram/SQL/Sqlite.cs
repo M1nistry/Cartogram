@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Cartogram.SQL
 {
@@ -82,6 +84,10 @@ namespace Cartogram.SQL
                                             `zone` TEXT, `boss` TEXT, `boss_information` TEXT, `description` TEXT);";
                         cmd.ExecuteNonQuery();
 
+                        cmd.CommandText = @"CREATE TABLE IF NOT EXISTS `error_log` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `message` TEXT, `inner_exception` TEXT, `stack_trace`, 
+                                            `error_time` DATETIME, `environment` TEXT, `version` TEXT, `method` TEXT);";
+                        cmd.ExecuteNonQuery();
+
                         return true;
                     }
                 }
@@ -92,6 +98,7 @@ namespace Cartogram.SQL
                 return false;
             }
         }
+
 
         public static int AddMap(Map newMap)
         {
@@ -851,5 +858,68 @@ namespace Cartogram.SQL
         }
 
         #endregion
+
+        internal static ObservableCollection<Error> GetErrors()
+        {
+            var errorCollection = new ObservableCollection<Error>();
+            using (var conn = new SQLiteConnection(Connection).OpenAndReturn())
+            {
+                const string selectErrors = @"SELECT * FROM `error_log`";
+                using (var cmd = new SQLiteCommand(selectErrors, conn))
+                {
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var newError = new Error
+                            {
+                                Id = reader.GetInt32(0),
+                                Message = reader.GetString(1),
+                                InnerException = reader.GetString(2),
+                                StackTrace = reader.GetString(3),
+                                Time = reader.GetDateTime(4),
+                                Environment = reader.GetString(5),
+                                Version = reader.GetString(6),
+                                Method = reader.GetString(7)
+                            };
+                            errorCollection.Add(newError);
+                        }
+                    }
+                }
+            }
+            return errorCollection;
+        }
+
+        internal static void WriteError(Exception exError, string method)
+        {
+            try
+            {
+                using (var conn = new SQLiteConnection(Connection).OpenAndReturn())
+                {
+                    const string insertQuery = "INSERT INTO `error_log` (`message`, `inner_exception`, `stack_trace`, `error_time`, `environment`, `version`, `method`) " +
+                                               "VALUES (@message, @innerException, @stackTrace, @errorTime, @environment, @user, @version, @method);";
+
+                    conn.Open();
+
+                    using (var cmd = new SQLiteCommand(insertQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@message", (exError.Message));
+                        cmd.Parameters.AddWithValue("@innerException", exError.InnerException?.ToString() ?? string.Empty);
+                        cmd.Parameters.AddWithValue("@stackTrace", (exError.StackTrace ?? string.Empty));
+                        cmd.Parameters.AddWithValue("@errorTime", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@environment", (Environment.OSVersion == null ? string.Empty : Environment.MachineName));
+                        cmd.Parameters.AddWithValue("@version", (Assembly.GetEntryAssembly().GetName().Version == null ? string.Empty : Assembly.GetEntryAssembly().GetName().Version.ToString()));
+                        cmd.Parameters.AddWithValue("@method", method);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in [WriteError]{0}Message: {1}{0}InnerException: {2}{0}StackTrace{3}", Environment.NewLine, ex.Message, ex.InnerException, ex.StackTrace);
+                return;
+            }
+        }
     }
 }

@@ -14,12 +14,19 @@ namespace Cartogram
         /// <returns> TRUE if it contains 'Rarity:' on the first line </returns>
         internal static bool CheckClipboard()
         {
-            if (!System.Windows.Clipboard.ContainsText(System.Windows.TextDataFormat.Text)) return false;
+            try
+            {
+                if (!System.Windows.Clipboard.ContainsText(System.Windows.TextDataFormat.Text)) return false;
 
-            var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
-            if (clipboardContents.Length <= 0) return false;
-            var splitClipboard = clipboardContents.Replace("\r", "").Split('\n');
-            return clipboardContents.Length != -1 && splitClipboard[0].StartsWith("Rarity:");
+                var clipboardContents = System.Windows.Clipboard.GetText(System.Windows.TextDataFormat.Text);
+                if (clipboardContents.Length <= 0) return false;
+                var splitClipboard = clipboardContents.Replace("\r", "").Split('\n');
+                return clipboardContents.Length != -1 && splitClipboard[0].StartsWith("Rarity:");
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>

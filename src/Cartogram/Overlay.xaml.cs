@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using System.Windows.Threading;
 using Cartogram.Properties;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
@@ -28,6 +21,30 @@ namespace Cartogram
 
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
+
+        public bool IndicatorImage
+        {
+            set
+            {
+                var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                timer.Tick += (sender, args) =>
+                {
+                    ImageTick.Source = null;
+                    timer.Stop();
+                };
+                switch (value)
+                {
+                    case (true):
+                        ImageTick.Source = new BitmapImage(new Uri("/Cartogram;component/Resources/check56_green.png", UriKind.Relative));
+                        timer.Start();
+                        break;
+                    case (false):
+                        ImageTick.Source = new BitmapImage(new Uri("/Cartogram;component/Resources/cross93_red.png", UriKind.Relative));
+                        timer.Start();
+                        break;
+                }
+            }
+        }
 
         public Overlay()
         {
@@ -98,6 +115,16 @@ namespace Cartogram
                 Settings.Default.OverlayOpacity = opacity;
             }
             Settings.Default.Save();
+        }
+
+        private void LabelCurrentMap_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            IndicatorImage = true;
+        }
+
+        private void LabelMapDrops_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            IndicatorImage = false;
         }
     }
 }

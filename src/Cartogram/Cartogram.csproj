@@ -190,6 +190,9 @@
     <Compile Include="Details.xaml.cs">
       <DependentUpon>Details.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ErrorLog.xaml.cs">
+      <DependentUpon>ErrorLog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Experience.cs" />
     <Compile Include="League.cs" />
     <Compile Include="Map.cs" />
@@ -219,6 +222,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Details.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ErrorLog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -295,6 +302,8 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="Resources\cross93_red.png" />
+    <Resource Include="Resources\check56_green.png" />
     <Content Include="Resources\Experience.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

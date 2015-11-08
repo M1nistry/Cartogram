@@ -113,11 +113,10 @@ namespace Cartogram
 
         private void ChangeHotkey(ContentControl button, Key key)
         {
-            if (key == Key.F9) MessageBox.Show("F9");
-            if (key == Key.F10) MessageBox.Show("F10");
             button.Content = key.ToString();
             button.BorderBrush = Brushes.Gray;
             var keyInt = KeyInterop.VirtualKeyFromKey(key);
+            if (key == Key.Escape) keyInt = KeyInterop.VirtualKeyFromKey(Key.None);
             switch (button.Name)
             {
                 case ("ButtonMap"):

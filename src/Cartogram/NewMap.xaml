@@ -36,12 +36,12 @@
                                 <RowDefinition Height="18"/>
                             </Grid.RowDefinitions>
                             <TextBlock x:Name="LabelMap" Text="Zone:" Grid.Row="0"/>
-                            <TextBlock x:Name="LabelMapValue" Text="Fetid Pool (Act 1)" Grid.Column="1" Grid.Row="0"/>
+                            <TextBlock x:Name="LabelMapValue" Text="-Zone Name-" Grid.Column="1" Grid.Row="0"/>
                             <TextBlock x:Name="LabelBoss" Text="Boss:" Grid.Row="1" Grid.Column="0"/>
-                            <TextBlock x:Name="LabelBossValue" Text="Spinecrack" Grid.Column="1" Grid.Row="1"/>
+                            <TextBlock x:Name="LabelBossValue" Text="-Bossname-" Grid.Column="1" Grid.Row="1"/>
                         </Grid>
                         <ScrollViewer x:Name="InfoScroll" Canvas.Top="40" Canvas.Left="5" Width="Auto" MaxWidth="197" VerticalScrollBarVisibility="Visible" Height="99">
-                            <TextBlock x:Name="LabelDescription" Height="Auto" Width="Auto" Text="This map is dangerous. Be careful of the spooky ghost in the cellar. Be sure to pray at the alter before explasdasdasdasdasdasdasdasdoring into the broken wall as there is no light source. Blah blah blaaah" TextWrapping="Wrap" MouseEnter="LabelDescription_MouseEnter" MouseLeave="LabelDescription_MouseLeave"/>
+                            <TextBlock x:Name="LabelDescription" Height="Auto" Width="Auto" Text="This is placeholder text, your map is ready to start. Goodluck and don't RIP" TextWrapping="Wrap" MouseEnter="LabelDescription_MouseEnter" MouseLeave="LabelDescription_MouseLeave"/>
                         </ScrollViewer>
                         <Border x:Name="BorderProperties" BorderBrush="#FFABADB3" BorderThickness="1" Canvas.Left="0" Canvas.Top="0" Height="141" Width="202"/>
                     </Canvas>
@@ -51,7 +51,7 @@
                 </Grid>
             </Expander>
             <ComboBox x:Name="ComboLeague" SelectionChanged="ComboLeague_SelectionChanged" Height="23" Canvas.Left="57" Canvas.Top="14" Width="155"/>
-            <Label x:Name="LabelName" Content="Name:" ToolTip="Name of the character this map is being run on. This is used to be able to later breakdown maps run by a specified character and see their progression of experience. " Margin="8,40,375,36" Height="25"/>
+            <Label x:Name="LabelName" Content="Name:" ToolTip="Name of the character this map is being run on. This is used to be able to later breakdown maps run by a specified character and see their progression of experience." Margin="8,40,375,36" Height="25"/>
             <ComboBox x:Name="ComboBoxName" ToolTip="Enter your characters name here. Right click the drop down arrow to remove the currently selected name." LostFocus="TextBoxName_LostFocus" ItemsSource="{Binding}" IsEditable="True" Height="24" Canvas.Left="57" Canvas.Top="41" Width="155">
                 <ComboBox.ContextMenu>
                     <ContextMenu>
