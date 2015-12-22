@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -143,7 +144,7 @@ namespace Cartogram
         {
             if (ComboLeague.Text == string.Empty) MessageBox.Show(@"Please select a league", @"No league selected");
             if (ComboBoxName.Text == string.Empty) MessageBox.Show(@"Please enter your characters name", @"No character selected");
-            int zanaQuantity;
+            int zanaQuantity, fragmentQuantity;
             Settings.Default.ZanaQuantity = int.TryParse(ZanaInt.Content.ToString(), out zanaQuantity) ? zanaQuantity : 0;
             Settings.Default.SelectedLeague = ComboLeague.Text;
 
@@ -167,6 +168,8 @@ namespace Cartogram
                 CurrentMap.ZanaMod = string.Empty;
                 CurrentMap.Quantity += Settings.Default.ZanaQuantity;
             }
+            if (int.TryParse(FragmentValue.Content.ToString(), out fragmentQuantity) && (string) FragmentValue.Content != "0")
+                CurrentMap.Quantity += (fragmentQuantity * 5);
             CurrentMap.OwnMap = radioButtonOwn.IsChecked == true;
             CurrentMap.League = ComboLeague.Text;
             CurrentMap.Character = ComboBoxName.Text;
@@ -282,7 +285,7 @@ namespace Cartogram
         {
             var growAnimation = new DoubleAnimation
             {
-                From = 160,
+                From = 180,
                 To = 310,
                 FillBehavior = FillBehavior.Stop,
                 BeginTime = TimeSpan.FromSeconds(0.1),
@@ -303,7 +306,7 @@ namespace Cartogram
             var shrinkAnimation = new DoubleAnimation
             {
                 From = 310,
-                To = 160,
+                To = 180,
                 FillBehavior = FillBehavior.Stop,
                 BeginTime = TimeSpan.FromSeconds(0.1),
                 Duration = TimeSpan.FromSeconds(0.2)
@@ -321,6 +324,11 @@ namespace Cartogram
         private void LabelDescription_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             
+        }
+
+        private void Fragments_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            FragmentValue.Content = Fragments.Value.ToString("0");
         }
 
         private void LabelDescription_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)

@@ -11,7 +11,6 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using Cartogram.SQL;
 
-using System.Drawing;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Windows.Input;
@@ -82,6 +81,7 @@ namespace Cartogram
             InitializeComponent();
             
             _main = this;
+            
             if (Sqlite.ExperienceCount() != 100) PopulateExperience();
             PopulateMapInformation();
 
@@ -216,6 +216,7 @@ namespace Cartogram
             GridPacksizeColumn.Visibility = MenuHidePacksize.IsChecked ? Visibility.Hidden : Visibility.Visible;
 
             MenuTopMost.IsChecked = Settings.Default.Topmost;
+            Topmost = MenuTopMost.IsChecked;
 
             MenuLockOverlay.IsChecked = Settings.Default.LockOverlay;
         }
@@ -616,6 +617,7 @@ namespace Cartogram
 
         private void NewMap_OnClick(object sender, RoutedEventArgs e)
         {
+            if (_state != "WAITING") return;
             if (_newMap == null) _newMap = new NewMap();
             _newMap.Closed += delegate
             {
@@ -694,6 +696,7 @@ namespace Cartogram
         {
             Settings.Default.LockOverlay = MenuLockOverlay.IsChecked;
             Settings.Default.Save();
+            if (_state != "WAITING") return;
 
             if (!Settings.Default.LockOverlay)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -39,15 +40,23 @@ namespace Cartogram
 
         private void LabelGithubLink_MouseEnter(object sender, MouseEventArgs e)
         {
-            LabelGithubLink.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+            var label = (TextBlock) sender;
+            label.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
         }
 
         private void LabelGithubLink_MouseLeave(object sender, MouseEventArgs e)
         {
-            LabelGithubLink.Foreground = new SolidColorBrush(Color.FromArgb(255, 12, 130, 185));
+            var label = (TextBlock)sender;
+            label.Foreground = new SolidColorBrush(Color.FromArgb(255, 12, 130, 185));
         }
 
         private void image_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Process.Start("https://github.com/M1nistry/Cartogram");
+            e.Handled = true;
+        }
+
+        private void TextBlockGitHub_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             Process.Start("https://github.com/M1nistry/Cartogram");
             e.Handled = true;
