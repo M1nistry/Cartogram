@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -78,7 +79,7 @@ namespace Cartogram
 
         private void PopulateLeagues()
         {
-            var leagueList = new List<League>();
+            var leagueList = new ObservableCollection<League>();
             foreach (var entry in _main.LeagueObject)
             {
                 dynamic values = entry.Value;
@@ -91,6 +92,15 @@ namespace Cartogram
             }
             foreach (var league in leagueList.Where(league => league.Active))
             {
+                switch (league.PrettyName)
+                {
+                    case "Standard":
+                        ComboLeague.Items.Insert(0, league.PrettyName);
+                        continue;
+                    case "Hardcore":
+                        ComboLeague.Items.Insert(1, league.PrettyName);
+                        continue;
+                }
                 ComboLeague.Items.Add(league.PrettyName);
             }
         }

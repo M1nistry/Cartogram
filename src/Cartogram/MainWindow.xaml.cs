@@ -97,7 +97,7 @@ namespace Cartogram
             _mapTimer.Tick += _mapTimer_Elapsed;
             LeagueObject = JsonHandler.ParseJsonObject("http://api.exiletools.com/ladder?listleagues=1");
             ExtendedStatusStrip.AddStatus(LeagueObject == null
-                ? @"We failed to fetch the list of active leagues from: http://api.exiletools.com. You either have no internet connection or the source is no longer avaliable. Message /u/_m1nistry on reddit to look for alternatives."
+                ? @"We failed to fetch the list of active leagues from: http://api.exiletools.com. You either have no internet connection or the source is no longer avaliable."
                 : "Welcome back, Exile!");
             ExtendedStatusStrip.ButtonExpand.Click += ExpandStatus;
             _state = "WAITING";
@@ -132,9 +132,7 @@ namespace Cartogram
                 var githubVersion = await UpdateCheck.UpdateAvaliable();
                 if (githubVersion <= Version)
                 {
-                    if (manual)
-                        System.Windows.MessageBox.Show("No update found!", "No update found!", MessageBoxButton.OK,
-                            MessageBoxImage.Exclamation);
+                    if (manual) System.Windows.MessageBox.Show($"You have the latest version: {Version}", "No update found!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     return;
                 }
                 var aboutWindow = new About
